@@ -1947,9 +1947,9 @@ const SaleInvoices = () => {
             <CTableHeaderCell scope="col">
               Reseller
             </CTableHeaderCell>
-            <CTableHeaderCell scope="col">
+           {/* <CTableHeaderCell scope="col">
               Total Amount
-            </CTableHeaderCell>
+            </CTableHeaderCell> */}
             <CTableHeaderCell scope="col">
               Status
             </CTableHeaderCell>
@@ -2005,9 +2005,9 @@ const SaleInvoices = () => {
                   <CTableDataCell>
                     {invoice.reseller?.businessName || 'N/A'}
                   </CTableDataCell>
-                  <CTableDataCell className="text-end">
+                  {/*  <CTableDataCell className="text-end">
                     ₹{invoice.totalAmount?.toFixed(2) || '0.00'}
-                  </CTableDataCell>
+                  </CTableDataCell> */}
                   <CTableDataCell>
                     {isCancelled ? (
                       <CBadge color="danger" className="badge-cancelled">
