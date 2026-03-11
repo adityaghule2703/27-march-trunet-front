@@ -5,7 +5,7 @@ import axiosInstance from 'src/axiosInstance';
 import '../../css/form.css';
 import '../../css/table.css';
 import { CAlert, CButton, CFormInput, CSpinner, CTable, CTableBody, CTableDataCell, CTableHead, CTableHeaderCell, CTableRow } from '@coreui/react';
-import { cilPlus, cilSearch } from '@coreui/icons';
+import { cilPlus } from '@coreui/icons';
 import CIcon from '@coreui/icons-react';
 import BuildingFormModal from './BuildingModel';
 import CustomerModel from './CustomerModel';
@@ -43,7 +43,8 @@ const AddStockUsage = () => {
     address: '',
     shiftingAmount: '',
     wireChangeAmount: '',
-    toCenter:''
+    toCenter:'',
+    damageReason:''
   });
 
   const [errors, setErrors] = useState({});
@@ -362,6 +363,7 @@ const AddStockUsage = () => {
         stolenFrom: formData.stolenFrom || null,
         address: formData.address || null,
         toCenter: formData.toCenter || null,
+        damageReason: formData.damageReason || null,
         items: items
       };
   
@@ -387,8 +389,7 @@ const AddStockUsage = () => {
       
       if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
-        
-        // Handle the specific center validation error
+
         if (errorMessage.includes('CenterStock validation failed') && errorMessage.includes('Must be a valid Center (not Outlet)')) {
           errorMessage = 'Invalid center type. Please select a valid Center (not an Outlet) for stock usage.';
         }
@@ -417,7 +418,8 @@ const AddStockUsage = () => {
       address: '',
       shiftingAmount: '',
       wireChangeAmount: '',
-      toCenter: '' 
+      toCenter: '',
+      damageReason: '' 
     });
     setSelectedRows({});
     setAssignedSerials({});
@@ -950,7 +952,25 @@ const AddStockUsage = () => {
                 </div>
                 {errors.toCenter && <span className="error">{errors.toCenter}</span>}
               </div>
-              <div className="form-group"></div>
+              <div className="form-group">
+                <label className={`form-label ${errors.damageReason ? 'error-label' : formData.damageReason ? 'valid-label' : ''}`}>
+                 Damage Reason <span className="required">*</span>
+                </label>
+                <select
+                  name="damageReason"
+                  className={`form-input ${errors.damageReason ? 'error-input' : formData.reason ? 'valid-input' : ''}`}
+                  value={formData.damageReason}
+                  onChange={handleChange}
+                >
+                  <option value="">SELECT</option>
+                  <option value="Physical Damage">Physical Damage</option>
+                  <option value="Water Damage">Water Damage</option>
+                  <option value="Power Surge">Power Surge</option>
+                  <option value="Manufacturing Defect">Manufacturing Defect</option>
+                  <option value="Other">Other</option>
+                </select>
+                {errors.damageReason && <span className="error">{errors.damageReason}</span>}
+              </div>
               <div className="form-group"></div>
               <div className="form-group"></div>
             </div>

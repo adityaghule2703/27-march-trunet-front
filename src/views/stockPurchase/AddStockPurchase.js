@@ -60,7 +60,6 @@ const AddStockPurchase = () => {
     fetchVendors();
   }, []);
 
-  // Fetch products on component mount
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -78,11 +77,61 @@ const AddStockPurchase = () => {
     fetchProducts();
   }, []);
 
-  // Fetch stock purchase data for editing
+  // useEffect(() => {
+  //   const fetchStockPurchase = async () => {
+  //     if (!id) return;
+  //     try {
+  //       const res = await axiosInstance.get(`/stockpurchase/${id}`);
+  //       if (res.data.success) {
+  //         const data = res.data.data;
+  //         setFormData({
+  //           type: data.type,
+  //           date: data.date.split('T')[0],
+  //           invoiceNo: data.invoiceNo,
+  //           vendor: data.vendor.businessName,
+  //           vendor_id: data.vendor._id || data.vendor.id,
+  //           transportAmount: data.transportAmount,
+  //           remark: data.remark,
+  //           cgst: data.cgst,
+  //           sgst: data.sgst,
+  //           igst: data.igst,
+  //         });
+
+  //         const selected = {};
+  //         const order = [];
+          
+  //         data.products.forEach((prod, index) => {
+  //           selected[prod.product._id] = {
+  //             quantity: prod.purchasedQuantity.toString(),
+  //             price: prod.price.toString(),
+  //             productRemark: prod.productRemark || '',
+  //             productInStock: prod.product.stock?.currentStock || 0,
+  //             trackSerialNumber: prod.product.trackSerialNumber,
+  //             serialNumbers: (prod.serialNumbers || []).map(sn => 
+  //               typeof sn === 'string' ? sn : sn.serialNumber
+  //             ),
+  //           };
+  //           order.push({ productId: prod.product._id, order: index });
+  //         });
+          
+  //         setSelectedRows(selected);
+  //         setSelectionOrder(order);
+  //         selectionCounter.current = data.products.length;
+  //       }
+  //     } catch (error) {
+  //       console.error('Error fetching stock purchase for edit:', error);
+  //       showAlert('danger', 'Failed to fetch stock purchase data');
+  //     }
+  //   };
+
+  //   fetchStockPurchase();
+  // }, [id]);
+  
+
   useEffect(() => {
     const fetchStockPurchase = async () => {
       if (!id) return;
-
+  
       try {
         const res = await axiosInstance.get(`/stockpurchase/${id}`);
         if (res.data.success) {
@@ -99,20 +148,25 @@ const AddStockPurchase = () => {
             sgst: data.sgst,
             igst: data.igst,
           });
-
+  
           const selected = {};
           const order = [];
           
           data.products.forEach((prod, index) => {
+            let serialNumbers = [];
+            if (prod.serialNumbers && prod.serialNumbers.length > 0) {
+              serialNumbers = prod.serialNumbers.map(sn => 
+                typeof sn === 'string' ? sn : sn.serialNumber || sn
+              );
+            }
+  
             selected[prod.product._id] = {
               quantity: prod.purchasedQuantity.toString(),
               price: prod.price.toString(),
               productRemark: prod.productRemark || '',
               productInStock: prod.product.stock?.currentStock || 0,
               trackSerialNumber: prod.product.trackSerialNumber,
-              serialNumbers: (prod.serialNumbers || []).map(sn => 
-                typeof sn === 'string' ? sn : sn.serialNumber
-              ),
+              serialNumbers: serialNumbers,
             };
             order.push({ productId: prod.product._id, order: index });
           });
@@ -126,18 +180,17 @@ const AddStockPurchase = () => {
         showAlert('danger', 'Failed to fetch stock purchase data');
       }
     };
-
+  
     fetchStockPurchase();
   }, [id]);
 
-  // Handle form input changes
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: '' }));
   };
 
-  // Handle vendor selection from dropdown
   const handleVendorSelect = (selectedOption) => {
     if (selectedOption) {
       setFormData(prev => ({
@@ -155,15 +208,13 @@ const AddStockPurchase = () => {
     setErrors(prev => ({ ...prev, vendor: '' }));
   };
 
-  // Handle product row selection
   const handleRowSelect = (productId, productPrice, productStock, trackSerialNumber) => {
     setSelectedRows((prev) => {
       const updated = { ...prev };
       if (updated[productId]) {
-        // Remove product
+
         setSelectionOrder(prevOrder => prevOrder.filter(item => item.productId !== productId));
         delete updated[productId];
-        // Clear any errors for this product
         setErrors(prev => {
           const newErrors = { ...prev };
           delete newErrors[`quantity_${productId}`];
@@ -171,14 +222,14 @@ const AddStockPurchase = () => {
           return newErrors;
         });
       } else {
-        // Add product with default quantity of 1
+
         const newOrder = selectionCounter.current++;
         setSelectionOrder(prevOrder => [
           { productId, order: newOrder },
           ...prevOrder
         ]);
         updated[productId] = { 
-          quantity: '1', // Initialize with 1 instead of empty string
+          quantity: '1',
           productRemark: '',
           price: (productPrice || 0).toString(),
           productInStock: productStock || 0,
@@ -188,11 +239,9 @@ const AddStockPurchase = () => {
       }
       return updated;
     });
-    // Clear products error if at least one product is selected
     setErrors(prev => ({ ...prev, products: '' }));
   };
 
-  // Handle row input changes (quantity, price)
   const handleRowInputChange = (productId, field, value) => {
     setSelectedRows((prev) => ({
       ...prev,
@@ -201,18 +250,16 @@ const AddStockPurchase = () => {
         [field]: value,
       },
     }));
-    // Clear error for this field when user starts typing
+
     if (field === 'quantity') {
       setErrors(prev => ({ ...prev, [`quantity_${productId}`]: '' }));
     }
   };
 
-  // Add new vendor
   const handleAddVendor = () => {
     setShowVendorModal(true);
   };
 
-  // Handle vendor added from modal
   const handleVendorAdded = (newVendor) => {
     setVendors((prev) => [...prev, newVendor]);
     setFormData((prev) => ({
@@ -224,13 +271,11 @@ const AddStockPurchase = () => {
     showAlert('success', 'Vendor added successfully!');
   };
 
-  // Open serial number modal
   const handleOpenSerialModal = (product) => {
     setSelectedProductForSerial(product);
     setShowSerialModal(true);
   };
 
-  // Handle serial numbers save
   const handleSerialNumbersSave = (productId, serialNumbers) => {
     const serialsArray = serialNumbers.split('\n')
       .map(sn => sn.trim())
@@ -245,22 +290,18 @@ const AddStockPurchase = () => {
     }));
     setShowSerialModal(false);
     setSelectedProductForSerial(null);
-    // Clear serial number error
     setErrors(prev => ({ ...prev, [`serial_${productId}`]: '' }));
     showAlert('success', 'Serial numbers saved successfully!');
   };
 
-  // Validate form before submission
   const validateForm = () => {
     let newErrors = {};
 
-    // Required field validations
     if (!formData.type.trim()) newErrors.type = 'Type is required';
     if (!formData.date) newErrors.date = 'Date is required';
     if (!formData.invoiceNo.trim()) newErrors.invoiceNo = 'Invoice No is required';
     if (!formData.vendor_id) newErrors.vendor = 'Vendor is required';
 
-    // Product selection validation
     const selectedProducts = Object.keys(selectedRows);
     if (selectedProducts.length === 0) {
       newErrors.products = 'At least one product must be selected';
@@ -269,16 +310,14 @@ const AddStockPurchase = () => {
       
       selectedProducts.forEach(productId => {
         const row = selectedRows[productId];
-        
-        // Validate quantity
+
         const quantity = parseInt(row.quantity);
         if (!quantity || quantity <= 0) {
           newErrors[`quantity_${productId}`] = 'Quantity must be greater than 0';
         } else {
           hasValidProduct = true;
         }
-        
-        // Validate serial numbers (only if trackSerialNumber is "Yes")
+
         if (row.trackSerialNumber === "Yes") {
           const serialCount = row.serialNumbers ? row.serialNumbers.length : 0;
           if (serialCount !== quantity) {
@@ -287,8 +326,7 @@ const AddStockPurchase = () => {
           }
         }
       });
-      
-      // If no product has valid quantity
+
       if (!hasValidProduct) {
         newErrors.products = 'All selected products must have valid quantity';
       }
@@ -297,7 +335,43 @@ const AddStockPurchase = () => {
     return newErrors;
   };
 
-  // Prepare data for submission
+  // const prepareSubmitData = () => {
+  //   const productsData = Object.keys(selectedRows)
+  //     .filter(id => selectedRows[id] && parseInt(selectedRows[id].quantity) > 0)
+  //     .map(productId => {
+  //       const row = selectedRows[productId];
+  //       const productData = {
+  //         product: productId,
+  //         price: parseFloat(row.price) || 0,
+  //         purchasedQuantity: parseInt(row.quantity) || 0
+  //       };
+        
+  //       if (row.trackSerialNumber === "Yes" && row.serialNumbers && row.serialNumbers.length > 0) {
+  //         productData.serialNumbers = row.serialNumbers;
+  //       }
+        
+  //       if (row.productRemark) {
+  //         productData.productRemark = row.productRemark;
+  //       }
+        
+  //       return productData;
+  //     });
+    
+  //   return {
+  //     type: formData.type,
+  //     date: new Date(formData.date).toISOString(),
+  //     invoiceNo: formData.invoiceNo.trim(),
+  //     vendor: formData.vendor_id,
+  //     transportAmount: parseFloat(formData.transportAmount) || 0,
+  //     remark: formData.remark,
+  //     cgst: parseFloat(formData.cgst) || 0,
+  //     sgst: parseFloat(formData.sgst) || 0,
+  //     igst: parseFloat(formData.igst) || 0,
+  //     products: productsData
+  //   };
+  // };
+  
+
   const prepareSubmitData = () => {
     const productsData = Object.keys(selectedRows)
       .filter(id => selectedRows[id] && parseInt(selectedRows[id].quantity) > 0)
@@ -308,9 +382,12 @@ const AddStockPurchase = () => {
           price: parseFloat(row.price) || 0,
           purchasedQuantity: parseInt(row.quantity) || 0
         };
-        
-        if (row.trackSerialNumber === "Yes" && row.serialNumbers && row.serialNumbers.length > 0) {
-          productData.serialNumbers = row.serialNumbers;
+        if (row.trackSerialNumber === "Yes") {
+          if (row.serialNumbers && row.serialNumbers.length > 0) {
+            productData.serialNumbers = row.serialNumbers;
+          } else {
+            productData.serialNumbers = [];
+          }
         }
         
         if (row.productRemark) {
@@ -334,13 +411,11 @@ const AddStockPurchase = () => {
     };
   };
 
-  // Show alert message
   const showAlert = (type, message) => {
     setAlert({ visible: true, type, message });
     setTimeout(() => setAlert(prev => ({ ...prev, visible: false })), 5000);
   };
 
-  // Reset form
   const handleReset = () => {
     setFormData({
       type: '',
@@ -362,21 +437,17 @@ const AddStockPurchase = () => {
     showAlert('info', 'Form has been reset');
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    
-    // Clear previous errors
+
     setErrors({});
-    
-    // Validate form
+
     const newErrors = validateForm();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       setSubmitting(false);
-      
-      // Scroll to first error
+
       const firstErrorKey = Object.keys(newErrors)[0];
       if (firstErrorKey) {
         const elementId = firstErrorKey.includes('quantity_') || firstErrorKey.includes('serial_') 
@@ -420,7 +491,7 @@ const AddStockPurchase = () => {
         const err = error.response.data;
 
         if (err.errors && Array.isArray(err.errors)) {
-          // Handle backend validation errors
+
           const backendErrors = {};
           err.errors.forEach((e) => {
             if (e.field) {
@@ -444,7 +515,6 @@ const AddStockPurchase = () => {
     }
   };
 
-  // Filter and sort products
   const filteredProducts = products
     .filter((p) =>
       p.productTitle?.toLowerCase().includes(productSearchTerm.toLowerCase())
@@ -465,7 +535,6 @@ const AddStockPurchase = () => {
       return 0;
     });
 
-  // Navigate back
   const handleBack = () => {
     navigate('/stock-purchase');
   };

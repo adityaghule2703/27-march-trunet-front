@@ -107,6 +107,7 @@ const TestingProfile = React.lazy(() => import('./views/testing-material/Testing
 const TestMaterial = React.lazy(() => import('./views/testing-material/TestMaterial'))
 const AuditLogs = React.lazy(() => import('./views/auditLogs/AuditLogs'))
 const ResellerQty = React.lazy(() => import('./views/Report/ResellerForwardedQty'))
+const RevertDamage = React.lazy(() => import('./views/revert-damage/RevertDamage'))
 const routes = [
 
   { path: '/', exact: true, name: <Translation>{(t) => t('home')}</Translation> },
@@ -682,6 +683,12 @@ const routes = [
     exact:true,
     name:<Translation>{(t) => t('Reseller Forwarded Qty')}</Translation>,
     element: ResellerQty
+  },
+  {
+    path:'/revert-damage',
+    exact:true,
+    name:<Translation>{(t) => t('Revert Damage')}</Translation>,
+    element: RevertDamage
   }
 ]
 

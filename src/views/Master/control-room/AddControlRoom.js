@@ -88,21 +88,28 @@ const AddControlRoom = () => {
         setAlert({ type: 'success', message: 'Data added successfully!' })
       }
       setTimeout(() => navigate('/controlRoom-list'),1500);
-    } catch (error) {
-      console.error('Error saving Data:', error)
-    
-      let message = 'Failed to save Data. Please try again!'
-    
-      if (error.response) {
-        message = error.response.data?.message || error.response.data?.error || message
-      } else if (error.request) {
-        message = 'No response from server. Please check your connection.'
-      } else {
-        message = error.message
-      }
-    
-      setAlert({ type: 'danger', message })
-    }    
+    }catch (error) {
+    console.error('Error saving Data:', error)
+
+    let message = 'Failed to save Data. Please try again!'
+
+     if (error.response) {
+    const data = error.response.data
+
+    if (data.errors && Array.isArray(data.errors)) {
+      message = `${data.message}: ${data.errors.join(", ")}`
+    } else {
+      message = data.message || data.error || message
+    }
+
+  } else if (error.request) {
+    message = 'No response from server. Please check your connection.'
+  } else {
+    message = error.message
+  }
+
+  setAlert({ type: 'danger', message })
+} 
   };
 
   const handleReset = () => {

@@ -314,7 +314,12 @@ const getNav = (permissions = []) => {
       to: '/stock-usage',
       icon: <i className="fa fa-shopping-cart nav-icon" style={{ width: '20px', color:'#b8c7ce', fontSize:'14px' }} />,
     })
-
+    _nav.push({
+      component: CNavItem,
+      name: <Translation>{(t) => t('Revert Damage')}</Translation>,
+      to: '/revert-damage',
+      icon: <i className="fa fa-shopping-cart nav-icon" style={{ width: '20px', color:'#b8c7ce', fontSize:'14px' }} />,
+    })
     if (userCenterType == 'outlet') {
       _nav.push({
         component: CNavItem,
@@ -495,7 +500,6 @@ const getNav = (permissions = []) => {
     })
 
   } else {
-    // Original permission-based logic for non-superadmin users
     if (hasPermission(permissions, 'Indent', ['indent_own_center', 'indent_all_center'])) {
       _nav.push({
         component: CNavItem,
@@ -513,7 +517,14 @@ const getNav = (permissions = []) => {
         icon: <i className="fa fa-shopping-cart nav-icon" style={{ width: '20px', color:'#b8c7ce', fontSize:'14px' }} />,
       })
     }
-
+    if (hasPermission(permissions, 'Usage', ['view_usage_own_center', 'manage_usage_own_center'])) {
+      _nav.push({
+        component: CNavItem,
+        name: <Translation>{(t) => t('Revert Damage')}</Translation>,
+        to: '/revert-damage',
+        icon: <i className="fa fa-shopping-cart nav-icon" style={{ width: '20px', color:'#b8c7ce', fontSize:'14px' }} />,
+      })
+    }
     if (userCenterType == 'outlet') {
       _nav.push({
         component: CNavItem,
