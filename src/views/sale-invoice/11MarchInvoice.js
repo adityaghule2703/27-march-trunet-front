@@ -549,17 +549,17 @@ const SaleInvoices = () => {
     
   //   try {
   //     setInvoiceMetaData(metaData);
-  
+
   //     const selectedData = customers.filter(c => selectedChallans.includes(c._id));
   //     if (selectedData.length === 0) return;
-  
+
   //     const invoiceNumber = `STEL/${new Date().getFullYear()}-${(new Date().getFullYear() + 1).toString().slice(2)}/${Math.floor(Math.random() * 1000)}`;
   //     const invoiceDate = new Date().toLocaleDateString('en-GB', { 
   //       day: '2-digit', 
   //       month: 'short', 
   //       year: '2-digit' 
   //     });
-  
+
   //     const allProductIds = [];
   //     selectedData.forEach(challan => {
   //       challan.products.forEach(product => {
@@ -568,11 +568,11 @@ const SaleInvoices = () => {
   //         }
   //       });
   //     });
-  
+
   //     const repairCostMap = await fetchRepairCosts(allProductIds);
       
   //     const reseller = selectedData[0]?.center?.reseller;
-  
+
   //     const allCenters = [
   //       ...new Set(selectedData.map(c => c.center?._id).filter(Boolean))
   //     ];
@@ -581,7 +581,7 @@ const SaleInvoices = () => {
   //       ...new Set(selectedData.map(c => c.center?.centerName).filter(Boolean))
   //     ];
   //     const centersList = centerNames.join(', ');
-  
+
   //     const productMap = new Map();
       
   //     selectedData.forEach(challan => {
@@ -636,7 +636,7 @@ const SaleInvoices = () => {
   //             centerReturnQty = resellerQty - damageRepairQty;
   //           }
   //         }
-  
+
   //         if (productMap.has(productId)) {
   //           const existing = productMap.get(productId);
            
@@ -672,7 +672,7 @@ const SaleInvoices = () => {
   //             outletRate: salePrice,
   //             repairRate: repairCostPerUnit,
   //             centerReturnRate: 0, 
-  
+
   //             outletAmount: outletAmount,
   //             damageRepairAmount: damageRepairAmount,
   //             centerReturnAmount: centerReturnAmount,
@@ -683,9 +683,9 @@ const SaleInvoices = () => {
   //         }
   //       });
   //     });
-  
+
   //     const combinedProducts = Array.from(productMap.values());
-  
+
   //     const totalOutletAmount = combinedProducts.reduce((sum, p) => sum + p.outletAmount, 0);
   //     const totalDamageRepairAmount = combinedProducts.reduce((sum, p) => sum + p.damageRepairAmount, 0);
   //     const totalCenterReturnAmount = combinedProducts.reduce((sum, p) => sum + p.centerReturnAmount, 0);
@@ -696,7 +696,7 @@ const SaleInvoices = () => {
   //     const sgst = totalBeforeTax * 0.09;
   //     const roundOff = Math.round(totalBeforeTax + cgst + sgst) - (totalBeforeTax + cgst + sgst);
   //     const total = totalBeforeTax + cgst + sgst + roundOff;
-  
+
   //     const hsnMap = new Map();
   //     combinedProducts.forEach(product => {
   //       const hsn = product.hsnCode;
@@ -721,15 +721,15 @@ const SaleInvoices = () => {
   //         });
   //       }
   //     });
-  
+
   //     const hsnSummary = Array.from(hsnMap.values());
-  
+
   //     const productsPerPage = 8;
   //     const pages = [];
   //     for (let i = 0; i < combinedProducts.length; i += productsPerPage) {
   //       pages.push(combinedProducts.slice(i, i + productsPerPage));
   //     }
-  
+
   //     const invoiceHTML = `
   //       <html>
   //       <head>
@@ -737,24 +737,6 @@ const SaleInvoices = () => {
   //         <style>
   //           @page { size: A4; margin: 12mm; }
   //           body { font-family: Arial, sans-serif; color: #000; margin: 0; padding: 0;}
-
-  //           @media screen {
-  //              body {
-  //                 margin-left: 100px;
-  //                 margin-right: 100px;
-  //                 margin-top: 20px;
-  //                 margin-bottom: 20px;
-  //                }
-  //               }
-  //              @media print {
-  //              body {
-  //                  margin: 0;
-  //                  padding: 0;
-  //                 }
-  //                 @page {
-  //                margin: 12mm;
-  //                 }
-  //               }
   //           .title { text-align: center; font-weight: bold; font-size: 16px; margin: 6px 0; }
   //           .main-border { border: 1px solid #000; width: 100%; border-collapse: collapse; }
   //           .main-border td, .main-border th { border: 1px solid #000; padding: 5px; vertical-align: top; }
@@ -773,32 +755,16 @@ const SaleInvoices = () => {
   //             border: 1px solid #dee2e6;
   //             border-radius: 4px;
   //           }
-  //           .print-button {
-  //             display: block;
-  //             margin: 20px auto;
-  //             padding: 10px 15px;
-  //             background-color: #3c8dbc;
-  //             color: white;
-  //             border: none;
-  //             font-size: 16px;
-  //             cursor: pointer;
-  //             position: sticky;
-  //             top: 20px;
-  //             z-index: 1000;
-  //           }
-  //           .print-button:hover {
-  //             background-color: #3c8dbc;
-  //           }
   //           @media print { 
   //             .page-break { page-break-before: always; } 
   //             .no-print { display: none; }
-  //             .print-button { display: none; }
   //           }
   //         </style>
   //       </head>
   //       <body>
+          
   //         <div class="title">Tax Invoice</div>
-  
+
   //         ${pages.map((products, pageIndex) => `
   //           <table class="main-border">
   //             <tr>
@@ -810,21 +776,21 @@ const SaleInvoices = () => {
   //                   27ABECS3422Q1ZX<br/>
   //                   GSTIN/UIN: 27ABECS3422Q1ZX
   //                 </div>
-  
+
   //                 <span class="label">Consignee (Ship to)</span><br/>
   //                 ${reseller?.businessName || 'SSV Alpha Broadband LLP'}<br/>
   //                 ${centersList || 'All Alpha Area'}<br/><br/>
   //                 GSTIN/UIN: ${reseller?.gstNumber || '27AEGFS1650E1Z6'}<br/>
   //                 State Name : ${reseller?.state || 'Maharashtra'}, Code : 27
   //                 <hr/>
-  
+
   //                 <span class="label">Buyer (Bill to)</span><br/>
   //                 ${reseller?.businessName || 'SSV Alpha Broadband LLP'}<br/>
   //                 ${reseller?.address1 || 'A/3, Landmark Soc, Sector-14, Vashi'}<br/>
   //                 GSTIN/UIN: ${reseller?.gstNumber || '27AEGFS1650E1Z6'}<br/>
   //                 State Name : ${reseller?.state || 'Maharashtra'}, Code : 27
   //               </td>
-  
+
   //               <td style="width:50%; padding:0;">
   //                 <table class="meta-table">
   //                   <tr>
@@ -858,7 +824,7 @@ const SaleInvoices = () => {
   //               </td>
   //             </tr>
   //           </table>
-  
+
   //           <table class="main-border" style="margin-top:10px;">
   //             <thead>
   //               <tr>
@@ -947,15 +913,15 @@ const SaleInvoices = () => {
   //           </table>
   //           ${pageIndex < pages.length - 1 ? '<div class="footer-note">continued ...</div><div class="page-break"></div>' : ''}
   //         `).join('')}
-  
+
   //         <!-- Tax Summary Page -->
   //         <div class="page-break"></div>
-  
+
   //         <div class="analysis-header" style="display:flex; justify-content:space-between; margin-top:10px;">
   //           <div>Invoice No. <strong>${invoiceNumber}</strong></div>
   //           <div>Dated <strong>${invoiceDate}</strong></div>
   //         </div>
-  
+
   //         <div style="text-align:center;">
   //           <p><strong>SSV Telecom Private Limited</strong><br/>
   //             A-1, Landmark CHS, Sector 14<br/>
@@ -969,7 +935,7 @@ const SaleInvoices = () => {
   //             State Name : Maharashtra, Code : 27
   //           </p>
   //         </div>
-  
+
   //         <table class="main-border" style="margin-top:10px;">
   //           <thead>
   //             <tr>
@@ -1015,12 +981,10 @@ const SaleInvoices = () => {
   //            </tr>
   //           </tbody>
   //         </table>
-  //           <button class="print-button no-print" onclick="window.print()">🖨️ Print</button>
-          
   //       </body>
   //       </html>
   //     `;
-  
+
   //     const invoiceData = {
   //       resellerId: reseller?._id,
   //       centers: allCenters,
@@ -1050,7 +1014,7 @@ const SaleInvoices = () => {
   //       },
   //       invoiceHtml: invoiceHTML
   //     };
-  
+
   //     let saveSuccess = false;
   //     try {
   //       const invoicedResponse = await markAsInvoiced(
@@ -1071,12 +1035,21 @@ const SaleInvoices = () => {
   //     }
   //     invoiceWindow = window.open('', '_blank');
   //     if (invoiceWindow) {
-  //       invoiceWindow.document.write(invoiceHTML);
+  //       const printHTML = invoiceHTML.replace('</body>', `
+  //         <script>
+  //           window.onload = () => {
+  //             setTimeout(() => {
+  //               window.print();
+  //             }, 1000);
+  //           }
+  //         </script>
+  //       </body>`);
+  //       invoiceWindow.document.write(printHTML);
   //       invoiceWindow.document.close();
   //     } else {
   //       throw new Error('Could not open invoice window. Please allow popups.');
   //     }
-  
+
   //     fetchData(activeSearch, currentPage);
       
   //     setSelectedChallans([]);
@@ -1088,7 +1061,7 @@ const SaleInvoices = () => {
   //     } else {
   //       alert(`Invoice ${invoiceNumber} generated but could not be saved to database. Please contact administrator.`);
   //     }
-  
+
   //   } catch (error) {
   //     console.error('Error generating invoice:', error);
       
@@ -1108,7 +1081,6 @@ const SaleInvoices = () => {
   //     alert('Error generating invoice: ' + (error.message || 'Please try again'));
   //   }
   // };
-
 
 
   const handleGenerateInvoice = async (metaData) => {
@@ -1160,25 +1132,9 @@ const SaleInvoices = () => {
           
           const repairCostPerUnit = repairCostMap.get(product.product?._id?.toString()) || 150;
           
-          // Check if sourceBreakdown has valid data
           const sourceBreakdown = product.sourceBreakdown || {};
-          const hasValidSourceBreakdown = sourceBreakdown.totalApproved > 0;
-          
-          let resellerQty = 0;
-          let outletQty = 0;
-          
-          if (hasValidSourceBreakdown) {
-            // Use sourceBreakdown if available (for newer requests)
-            resellerQty = sourceBreakdown.fromReseller?.quantity || 0;
-            outletQty = sourceBreakdown.fromOutlet?.quantity || 0;
-            console.log(`Using sourceBreakdown for ${productTitle}: Reseller=${resellerQty}, Outlet=${outletQty}`);
-          } else {
-            // Fall back to receivedQuantity for older requests without sourceBreakdown
-            // Assume all received quantity came from outlet
-            outletQty = product.receivedQuantity || 0;
-            resellerQty = 0;
-            console.log(`Using receivedQuantity fallback for ${productTitle}: Outlet=${outletQty} (sourceBreakdown not available)`);
-          }
+          const resellerQty = sourceBreakdown.fromReseller?.quantity || 0;
+          const outletQty = sourceBreakdown.fromOutlet?.quantity || 0;
           
           const resellerStock = product.resellerStock || {};
           const availableBreakdown = resellerStock.availableBreakdown || {};
@@ -1186,7 +1142,6 @@ const SaleInvoices = () => {
           let damageRepairQty = 0;
           let centerReturnQty = 0;
           
-          // Only calculate damage repair if there's reseller quantity
           if (resellerQty > 0) {
             const totalDamageRepairInStock = availableBreakdown.damageRepair || 0;
             const totalCenterReturnInStock = availableBreakdown.centerReturn || 0;
@@ -1194,6 +1149,7 @@ const SaleInvoices = () => {
             
             if (totalResellerStockAvailable > 0) {
               const damageRepairRatio = totalDamageRepairInStock / totalResellerStockAvailable;
+              const centerReturnRatio = totalCenterReturnInStock / totalResellerStockAvailable;
               
               damageRepairQty = Math.min(
                 Math.round(resellerQty * damageRepairRatio),
@@ -1215,17 +1171,9 @@ const SaleInvoices = () => {
                 }
               }
             } else {
-              // If no breakdown info, assume 50-50 split
               damageRepairQty = Math.round(resellerQty / 2);
               centerReturnQty = resellerQty - damageRepairQty;
             }
-          }
-  
-          // For products with sourceBreakdown missing, we don't have damage repair info
-          // So we'll treat all as outlet stock (no damage repair)
-          if (!hasValidSourceBreakdown) {
-            damageRepairQty = 0;
-            centerReturnQty = 0;
           }
   
           if (productMap.has(productId)) {
@@ -1277,17 +1225,9 @@ const SaleInvoices = () => {
   
       const combinedProducts = Array.from(productMap.values());
   
-      // Filter out products with zero quantity
-      const nonZeroProducts = combinedProducts.filter(p => p.quantity > 0);
-      
-      if (nonZeroProducts.length === 0) {
-        alert('No products with quantity > 0 found in selected stock requests');
-        return;
-      }
-  
-      const totalOutletAmount = nonZeroProducts.reduce((sum, p) => sum + p.outletAmount, 0);
-      const totalDamageRepairAmount = nonZeroProducts.reduce((sum, p) => sum + p.damageRepairAmount, 0);
-      const totalCenterReturnAmount = nonZeroProducts.reduce((sum, p) => sum + p.centerReturnAmount, 0);
+      const totalOutletAmount = combinedProducts.reduce((sum, p) => sum + p.outletAmount, 0);
+      const totalDamageRepairAmount = combinedProducts.reduce((sum, p) => sum + p.damageRepairAmount, 0);
+      const totalCenterReturnAmount = combinedProducts.reduce((sum, p) => sum + p.centerReturnAmount, 0);
       
       const totalBeforeTax = totalOutletAmount + totalDamageRepairAmount + totalCenterReturnAmount;
       
@@ -1297,7 +1237,7 @@ const SaleInvoices = () => {
       const total = totalBeforeTax + cgst + sgst + roundOff;
   
       const hsnMap = new Map();
-      nonZeroProducts.forEach(product => {
+      combinedProducts.forEach(product => {
         const hsn = product.hsnCode;
         const taxableValue = product.totalAmount;
         const cgstAmount = taxableValue * 0.09;
@@ -1325,11 +1265,10 @@ const SaleInvoices = () => {
   
       const productsPerPage = 8;
       const pages = [];
-      for (let i = 0; i < nonZeroProducts.length; i += productsPerPage) {
-        pages.push(nonZeroProducts.slice(i, i + productsPerPage));
+      for (let i = 0; i < combinedProducts.length; i += productsPerPage) {
+        pages.push(combinedProducts.slice(i, i + productsPerPage));
       }
   
-      // [Rest of your invoice HTML generation code remains exactly the same]
       const invoiceHTML = `
         <html>
         <head>
@@ -1337,7 +1276,7 @@ const SaleInvoices = () => {
           <style>
             @page { size: A4; margin: 12mm; }
             body { font-family: Arial, sans-serif; color: #000; margin: 0; padding: 0;}
-  
+
             @media screen {
                body {
                   margin-left: 100px;
@@ -1624,7 +1563,7 @@ const SaleInvoices = () => {
       const invoiceData = {
         resellerId: reseller?._id,
         centers: allCenters,
-        products: nonZeroProducts,
+        products: combinedProducts,
         totalOutletAmount,
         totalDamageRepairAmount,
         totalCenterReturnAmount,
@@ -1669,7 +1608,6 @@ const SaleInvoices = () => {
       } catch (saveError) {
         console.error('Error saving invoice to database:', saveError);
       }
-      
       invoiceWindow = window.open('', '_blank');
       if (invoiceWindow) {
         invoiceWindow.document.write(invoiceHTML);
@@ -1710,7 +1648,6 @@ const SaleInvoices = () => {
     }
   };
 
-  
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     if (tab === 'invoices') {
