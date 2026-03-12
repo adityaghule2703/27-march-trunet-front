@@ -313,7 +313,7 @@ const UsageSummary = () => {
   }
 
   if (error) {
-    return <div className="alert alert-danger">Error loading data: {error}</div>;
+    return <div className="alert alert-danger">{error}</div>;
   }
 
   const formattedMonth = summary?.period

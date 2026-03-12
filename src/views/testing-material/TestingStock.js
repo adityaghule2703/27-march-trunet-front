@@ -107,8 +107,6 @@ const TestingStock = () => {
         params.append('product', searchParams.product);
       }
       params.append('page', page);
-      params.append('limit', 100);
-      
       const url = params.toString() ? `/testing-material?${params.toString()}` : '/testing-material';
       
       const response = await axiosInstance.get(url);

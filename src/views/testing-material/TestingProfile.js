@@ -118,7 +118,7 @@ const TestingProfile = () => {
   const userCenter = JSON.parse(localStorage.getItem('userCenter')) || {};
   const userCenterId = userCenter._id;
   const isToCenter = data?.toCenter?._id === userCenterId;
-  
+  console.log("is to center", isToCenter);
   const { hasPermission } = usePermission();
 
   useEffect(() => {

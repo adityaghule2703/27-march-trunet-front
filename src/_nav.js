@@ -375,12 +375,12 @@ const getNav = (permissions = []) => {
       icon: <i className="fa fa-check nav-icon" style={{ width: '20px', color:'#b8c7ce', fontSize:'14px'}} />,
     })
 
-    // _nav.push({
-    //   component: CNavItem,
-    //   name: <Translation>{(t) => t('Forward Testing')}</Translation>,
-    //   to: '/testing-stock',
-    //   icon: <i className="fa fa-file-invoice nav-icon" style={{ width: '20px', color:'#b8c7ce', fontSize:'14px'}} />,
-    // })
+    _nav.push({
+      component: CNavItem,
+      name: <Translation>{(t) => t('Forward Testing')}</Translation>,
+      to: '/testing-stock',
+      icon: <i className="fa fa-file-invoice nav-icon" style={{ width: '20px', color:'#b8c7ce', fontSize:'14px'}} />,
+    })
 
     // ===== MASTERS =====
     const masterItems = []
@@ -587,12 +587,12 @@ const getNav = (permissions = []) => {
         icon: <i className="fa fa-check nav-icon" style={{ width: '20px', color:'#b8c7ce', fontSize:'14px'}} />,
       })
     }
-      // _nav.push({
-      //   component: CNavItem,
-      //   name: <Translation>{(t) => t('Forward Testing')}</Translation>,
-      //   to: '/testing-stock',
-      //   icon: <i className="fa fa-file-invoice nav-icon" style={{ width: '20px', color:'#b8c7ce', fontSize:'14px'}} />,
-      // })
+      _nav.push({
+        component: CNavItem,
+        name: <Translation>{(t) => t('Forward Testing')}</Translation>,
+        to: '/testing-stock',
+        icon: <i className="fa fa-file-invoice nav-icon" style={{ width: '20px', color:'#b8c7ce', fontSize:'14px'}} />,
+      })
 
     // ===== MASTERS =====
     const masterItems = []

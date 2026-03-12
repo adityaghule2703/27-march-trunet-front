@@ -127,7 +127,7 @@ const StockTransferDetails = () => {
       if (response.data.success) {
         setAlert({ type: 'success', message: 'Shipment created successfully', visible: true })
         setShipmentModal(false)
-        setTimeout(() => window.location.reload(), 1000)
+        // setTimeout(() => window.location.reload(), 1000)
       } else {
         setAlert({ type: 'danger', message: 'Failed to create shipment', visible: true })
       }
@@ -253,7 +253,7 @@ const handleApprove = async () => {
         message: response.data.message || 'Transfer approved successfully', 
         visible: true 
       });
-      setTimeout(() => window.location.reload(), 1000);
+      // setTimeout(() => window.location.reload(), 1000);
     } else {
       setAlert({ 
         type: 'danger', 
@@ -338,7 +338,7 @@ const handleApproveAdmin = async () => {
 
     if (response.data.success) {
       setAlert({ type: 'success', message: 'Data approved successfully', visible: true });
-      setTimeout(() => window.location.reload(), 1000);
+      // setTimeout(() => window.location.reload(), 1000);
     } else {
       setAlert({ type: 'danger', message: 'Failed to approve data', visible: true });
     }
@@ -361,7 +361,7 @@ const handleRejectAdmin = async () => {
     const response = await axiosInstance.patch(`/stocktransfer/${id}/admin/reject`);
     if (response.data.success) {
       setAlert({ type: 'success', message: 'Data reject successfully', visible: true });
-      setTimeout(() => window.location.reload(), 1000);
+      // setTimeout(() => window.location.reload(), 1000);
     } else {
       setAlert({ type: 'danger', message: 'Failed to reject data', visible: true });
     }
@@ -379,7 +379,7 @@ const handleReject = async () => {
     const response = await axiosInstance.post(`/stocktransfer/${id}/reject`);
     if (response.data.success) {
       setAlert({ type: 'success', message: 'Data rejected successfully', visible: true });
-      setTimeout(() => window.location.reload(), 1000);
+      // setTimeout(() => window.location.reload(), 1000);
     } else {
       setAlert({ type: 'danger', message: 'Failed to reject data', visible: true });
     }
@@ -393,10 +393,10 @@ const handleReject = async () => {
 // Submit
 const handleSubmitRequest = async () => {
   try {
-    const response = await axiosInstance.put(`/stocktransfer/${id}/submit`, { status: 'Submitted' });
+    const response = await axiosInstance.post(`/stocktransfer/${id}/submit`, { status: 'Submitted' });
     if (response.data.success) {
       setAlert({ type: 'success', message: 'Data submitted successfully', visible: true });
-      setTimeout(() => window.location.reload(), 1000);
+      // setTimeout(() => window.location.reload(), 1000);
     } else {
       setAlert({ type: 'danger', message: 'Failed to submit', visible: true });
     }
@@ -527,7 +527,7 @@ const handleChangeApprovedQty = async () => {
         message: 'Approved quantities updated successfully',
         visible: true,
       });
-      setTimeout(() => window.location.reload(), 1000);
+      // setTimeout(() => window.location.reload(), 1000);
     } else {
       setAlert({
         type: 'danger',
@@ -554,7 +554,7 @@ const handleCancelShipment = async () => {
     const response = await axiosInstance.patch(`/stocktransfer/${id}/reject-shipment`);
     if (response.data.success) {
       setAlert({ type: 'success', message: 'Shipment canceled successfully', visible: true });
-      setTimeout(() => window.location.reload(), 1000);
+      // setTimeout(() => window.location.reload(), 1000);
     } else {
       setAlert({ type: 'danger', message: 'Failed to cancel shipment', visible: true });
     }
@@ -672,7 +672,7 @@ const handleCompleteIndent = async () => {
       visible: true,
     });
 
-    setTimeout(() => window.location.reload(), 1000);
+    // setTimeout(() => window.location.reload(), 1000);
   } catch (err) {
     console.error('Error in handleCompleteIndent:', err);
 
@@ -709,7 +709,7 @@ const handleUpdateShipment = async (shipmentData) => {
     if (response.data.success) {
       setAlert({ type: 'success', message: 'Shipment updated successfully', visible: true });
       setShipmentModal(false);
-      setTimeout(() => window.location.reload(), 1000);
+      // setTimeout(() => window.location.reload(), 1000);
     } else {
       setAlert({ type: 'danger', message: 'Failed to update shipment', visible: true });
     }
@@ -738,7 +738,7 @@ const handleMarkIncomplete = async (remark) => {
     if (response.data.success) {
       setAlert({ type: 'success', message: 'marked as incomplete', visible: true });
       setIncompleteModal(false);
-      setTimeout(() => window.location.reload(), 1000);
+      // setTimeout(() => window.location.reload(), 1000);
     } else {
       setAlert({ type: 'danger', message: 'Failed to mark incomplete', visible: true });
     }
@@ -831,7 +831,7 @@ const handleIncomplete = async () => {
         message: response.data.message || 'Incomplete transfer completed successfully', 
         visible: true 
       });
-      setTimeout(() => window.location.reload(), 1000);
+      // setTimeout(() => window.location.reload(), 1000);
     } else {
       setAlert({ 
         type: 'danger', 

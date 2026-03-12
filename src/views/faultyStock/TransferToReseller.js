@@ -206,10 +206,7 @@ const TransferToReseller = () => {
       if (response.data.success) {
         showSuccess(response.data.message || 'Items accepted successfully!');
         
-        // Refresh the list
         await fetchRepairedProducts();
-        
-        // Remove from selected rows if selected
         setSelectedRows(prev => {
           const updated = { ...prev };
           delete updated[product.outletStockId];

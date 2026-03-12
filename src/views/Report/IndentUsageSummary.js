@@ -389,19 +389,33 @@ return '"0"';
     );
   }
 
+  // const handleUsageClick = (item) => {
+  //   if (item.usage > 0) {
+  //     const params = new URLSearchParams({
+  //       product: item.productId || '',
+  //       center: item.center?.id || '',
+  //       productName: encodeURIComponent(item.productName || ''),
+  //       centerName: encodeURIComponent(item.center?.name || ''),
+  //       month: activeSearch.month || ''
+  //     });
+  //     navigate(`/usage-detail?${params.toString()}`);
+  //   }
+  // };
+
+
   const handleUsageClick = (item) => {
     if (item.usage > 0) {
-      const params = new URLSearchParams({
-        product: item.productId || '',
-        center: item.center?.id || '',
-        productName: encodeURIComponent(item.productName || ''),
-        centerName: encodeURIComponent(item.center?.name || ''),
-        month: activeSearch.month || ''
+      navigate('/usage-detail', {
+        state: {
+          productId: item.productId || '',
+          centerId: item.center?.id || '',
+          productName: item.productName || '',
+          centerName: item.center?.name || '',
+          month: activeSearch.month || ''
+        }
       });
-      navigate(`/usage-detail?${params.toString()}`);
     }
   };
-
   const handleTransferReceiveClick = (item) => {
     if (item.transferReceive > 0) {
       const centerId = item.center?.id || '';
