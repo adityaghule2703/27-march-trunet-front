@@ -16,7 +16,7 @@ const IncompleteRemarkModal = ({ visible, onClose, onSubmit, initialRemark = '' 
   };
 
   return (
-    <CModal visible={visible} onClose={onClose} size="sm">
+    <CModal visible={visible} onClose={onClose} size="lg">
       <CModalHeader>
         <CModalTitle>Add Incomplete Remark</CModalTitle>
       </CModalHeader>
@@ -30,7 +30,7 @@ const IncompleteRemarkModal = ({ visible, onClose, onSubmit, initialRemark = '' 
       </CModalBody>
       <CModalFooter>
         <CButton color="secondary" onClick={onClose}>Cancel</CButton>
-        <CButton color="primary" onClick={handleSubmit}>Submit</CButton>
+        <CButton className='reset-button' onClick={handleSubmit}>Submit</CButton>
       </CModalFooter>
     </CModal>
   );

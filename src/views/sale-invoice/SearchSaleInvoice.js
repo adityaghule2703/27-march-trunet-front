@@ -5,7 +5,6 @@ import {
   CModalTitle,
   CModalBody,
   CModalFooter,
-  CFormSelect,
   CButton
 } from '@coreui/react'
 import PropTypes from 'prop-types'
@@ -20,11 +19,6 @@ const SearchSaleInvoice = ({ visible, onClose, onSearch, centers, resellers }) =
     startDate: '',
     endDate: ''
   });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setSearchData(prev => ({ ...prev, [name]: value }))
-  }
 
   const handleDateChange = (dateValue) => {
     if (dateValue && dateValue.includes(' to ')) {

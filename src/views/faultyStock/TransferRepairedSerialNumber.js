@@ -147,7 +147,7 @@ const TransferSerialNumber = ({
           </div>
         ) : (
           <>
-            <CTable bordered striped responsive>
+            <CTable bordered striped >
               <CTableHead>
                 <CTableRow>
                   <CTableHeaderCell width="15%">SR.</CTableHeaderCell>

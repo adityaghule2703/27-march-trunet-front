@@ -19,10 +19,12 @@ import {
   CModalTitle,
   CModalBody,
   CModalFooter,
-  CAlert
+  CAlert,
+  CBadge,
+  CTooltip
 } from '@coreui/react';
 import CIcon from '@coreui/icons-react';
-import { cilArrowTop, cilArrowBottom, cilSearch, cilZoomOut, cilReload } from '@coreui/icons';
+import { cilArrowTop, cilArrowBottom, cilSearch, cilZoomOut, cilReload, cilWarning, cilCheck } from '@coreui/icons';
 import { CFormLabel } from '@coreui/react-pro';
 import axiosInstance from 'src/axiosInstance';
 import Pagination from 'src/utils/Pagination';
@@ -34,7 +36,6 @@ const RevertDamage = () => {
   const [flattenedData, setFlattenedData] = useState([]);
   const [centers, setCenters] = useState([]);
   const [products, setProducts] = useState([]);
-  const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
@@ -46,7 +47,7 @@ const RevertDamage = () => {
     product: '', 
     center: '', 
     usageType: 'Damage', 
-    status: '', 
+    status: 'completed', 
     createdBy: '', 
     startDate: '', 
     endDate: '' 
@@ -55,13 +56,16 @@ const RevertDamage = () => {
   const [serialModalVisible, setSerialModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedSerials, setSelectedSerials] = useState([]);
-  
-  // Confirmation modal for revert
+
   const [revertModalVisible, setRevertModalVisible] = useState(false);
   const [itemToRevert, setItemToRevert] = useState(null);
   const [revertLoading, setRevertLoading] = useState(false);
   const [revertSuccess, setRevertSuccess] = useState(null);
   const [revertError, setRevertError] = useState(null);
+  const [revertRemark, setRevertRemark] = useState('');
+  
+  const [eligibilityCheck, setEligibilityCheck] = useState(null);
+  const [checkingEligibility, setCheckingEligibility] = useState(false);
   
   const location = useLocation();
 
@@ -83,12 +87,13 @@ const RevertDamage = () => {
         setLoading(true);
         const urlParams = getUrlParams();
         
-        console.log('Transaction Report URL Parameters:', urlParams);
+        console.log('Revert Damage URL Parameters:', urlParams);
 
         await Promise.all([fetchCenters(), fetchProducts()]);
         
         let searchParams = {
-          usageType: 'Damage' // Default to Damage
+          usageType: 'Damage',
+          status: 'completed'
         };
 
         if (urlParams.product || urlParams.center || urlParams.usageType) {
@@ -97,9 +102,9 @@ const RevertDamage = () => {
             product: urlParams.product || '',
             center: urlParams.center || '',
             usageType: urlParams.usageType || 'Damage',
+            status: 'completed',
             startDate: '',
             endDate: '',
-            status: '',
             createdBy: ''
           };
           
@@ -107,11 +112,11 @@ const RevertDamage = () => {
           setActiveSearch(searchParams);
 
           if (urlParams.productName && urlParams.centerName && urlParams.usageType) {
-            document.title = `Transaction Report - ${decodeURIComponent(urlParams.productName)} at ${decodeURIComponent(urlParams.centerName)} (${urlParams.usageType})`;
+            document.title = `Revert Damage - ${decodeURIComponent(urlParams.productName)} at ${decodeURIComponent(urlParams.centerName)}`;
           }
         } else {
-          console.log('No URL parameters, fetching all damage data');
-          searchParams = { usageType: 'Damage' };
+          console.log('No URL parameters, fetching all completed damage data');
+          searchParams = { usageType: 'Damage', status: 'completed' };
           setActiveSearch(searchParams);
         }
         
@@ -128,7 +133,6 @@ const RevertDamage = () => {
     initializeData();
   }, [location.search]);
 
-  // Flatten the data structure to handle multiple items per transaction
   useEffect(() => {
     if (data && data.length > 0) {
       const flattened = [];
@@ -155,7 +159,10 @@ const RevertDamage = () => {
               createdBy: transaction.createdBy?.email || '',
               createdAt: transaction.createdAt,
               remark: transaction.remark,
-              damageReason: transaction.damageReason
+              damageReason: transaction.damageReason,
+              approvedBy: transaction.approvedBy?.name || transaction.approvedBy?.email || '',
+              approvalDate: transaction.approvalDate,
+              canRevert: true // Default to true, will be checked when needed
             });
           });
         }
@@ -187,10 +194,9 @@ const RevertDamage = () => {
       if (usageType) {
         params.append('usageType', usageType);
       }
+
+      params.append('status', 'completed');
       
-      if (searchParams.status) {
-        params.append('status', searchParams.status);
-      }
       if (searchParams.createdBy) {
         params.append('createdBy', searchParams.createdBy);
       }
@@ -213,13 +219,12 @@ const RevertDamage = () => {
       
       params.append('page', page);
       
-      // Use the stockusage endpoint with usageType=Damage
-      let url = '/stockusage?usageType=Damage';
+      let url = '/stockusage?usageType=Damage&status=completed';
       if (params.toString()) {
         url = `/stockusage?${params.toString()}`;
       }
       
-      console.log('Fetching Damage Data URL:', url);
+      console.log('Fetching Completed Damage Data URL:', url);
       const response = await axiosInstance.get(url);
       
       if (response.data.success) {
@@ -323,26 +328,26 @@ const RevertDamage = () => {
 
   const handleSearch = (searchData) => {
     setActiveSearch(searchData);
-    fetchData({ ...searchData, usageType: 'Damage' }, 1);
+    fetchData({ ...searchData, usageType: 'Damage', status: 'completed' }, 1);
   };
 
   const handleResetSearch = () => {
     const resetSearch = { 
       product: '', 
       center: '', 
-      usageType: 'Damage'
+      usageType: 'Damage',
+      status: 'completed'
     };
     setActiveSearch(resetSearch);
     setSearchTerm('');
-    fetchData({ usageType: 'Damage' }, 1);
+    fetchData({ usageType: 'Damage', status: 'completed' }, 1);
   };
 
   const isSearchActive = () => {
-    return Object.values(activeSearch).some(value => value !== '' && value !== 'Damage');
+    return Object.values(activeSearch).some(value => value !== '' && value !== 'Damage' && value !== 'completed');
   };
   
   const filteredData = flattenedData.filter(item => {
-    // Apply local search filter
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
       return (
@@ -350,13 +355,13 @@ const RevertDamage = () => {
         (item.usageType && item.usageType.toLowerCase().includes(searchLower)) ||
         (item.center && item.center.toLowerCase().includes(searchLower)) ||
         (item.product && item.product.toLowerCase().includes(searchLower)) ||
+        (item.damageReason && item.damageReason.toLowerCase().includes(searchLower)) ||
         (item.qty && item.qty.toString().includes(searchLower))
       );
     }
     return true;
   });
 
-  // Function to open serial number modal
   const handleShowSerialNumbers = (item) => {
     if (item.trackSerialNumber === "Yes" && item.serialNumbers && item.serialNumbers.length > 0) {
       setSelectedItem(item);
@@ -365,33 +370,56 @@ const RevertDamage = () => {
     }
   };
 
-  // Function to handle revert button click
-  const handleRevertClick = (item) => {
-    setItemToRevert(item);
-    setRevertModalVisible(true);
-    setRevertSuccess(null);
-    setRevertError(null);
+  const checkRevertEligibility = async (item) => {
+    try {
+      setCheckingEligibility(true);
+      setEligibilityCheck(null);
+      
+      const response = await axiosInstance.get(`/stockusage/${item.transactionId}/check-revert`);
+      
+      if (response.data.success) {
+        setEligibilityCheck(response.data);
+        
+        // If eligible, show the revert modal
+        if (response.data.eligible) {
+          setItemToRevert(item);
+          setRevertModalVisible(true);
+          setRevertSuccess(null);
+          setRevertError(null);
+          setRevertRemark('');
+        } else {
+          setRevertError(response.data.message || 'This item cannot be reverted');
+          setRevertModalVisible(true);
+        }
+      } else {
+        setRevertError(response.data.message || 'Failed to check eligibility');
+        setRevertModalVisible(true);
+      }
+    } catch (err) {
+      console.error('Error checking eligibility:', err);
+      setRevertError(err.response?.data?.message || err.message || 'Failed to check revert eligibility');
+      setRevertModalVisible(true);
+    } finally {
+      setCheckingEligibility(false);
+    }
   };
 
-  // Function to confirm revert
+  const handleRevertClick = (item) => {
+    checkRevertEligibility(item);
+  };
+
   const confirmRevert = async () => {
     if (!itemToRevert) return;
     
     try {
       setRevertLoading(true);
       setRevertError(null);
-      
-      // Call the revert API endpoint
-      const response = await axiosInstance.post('/stockusage/revert', {
-        transactionId: itemToRevert.transactionId,
-        itemId: itemToRevert.itemId,
-        usageType: 'Damage'
+      const response = await axiosInstance.put(`/stockusage/${itemToRevert.transactionId}/revert-damage`, {
+        revertRemark: revertRemark || `Reverted by ${JSON.parse(localStorage.getItem('user'))?.name || 'user'}`
       });
       
       if (response.data.success) {
         setRevertSuccess('Item successfully reverted from damage stock');
-        
-        // Refresh the data after successful revert
         setTimeout(() => {
           setRevertModalVisible(false);
           fetchData(activeSearch, currentPage);
@@ -425,7 +453,6 @@ const RevertDamage = () => {
 
   const totals = calculateTotals();
 
-  // Format date function
   const formatDate = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -438,7 +465,7 @@ const RevertDamage = () => {
 
   return (
     <div>
-      <div className='title'>Damage Products</div>
+      <div className='title'>Revert Damage Products</div>
     
       <SearchCenterStock
         visible={searchModalVisible}
@@ -446,9 +473,10 @@ const RevertDamage = () => {
         onSearch={handleSearch}
         centers={centers}
         products={products}
+        initialUsageType="Damage"
+        showStatusFilter={false}
       />
-      
-      {/* Serial Numbers Modal */}
+
       <CModal 
         visible={serialModalVisible} 
         onClose={() => setSerialModalVisible(false)}
@@ -502,35 +530,121 @@ const RevertDamage = () => {
         </CModalFooter>
       </CModal>
 
-      {/* Revert Confirmation Modal */}
       <CModal 
         visible={revertModalVisible} 
         onClose={() => setRevertModalVisible(false)}
+        size="lg"
       >
         <CModalHeader>
-          <CModalTitle>Confirm Revert</CModalTitle>
+          <CModalTitle>
+            {revertSuccess ? 'Revert Successful' : 
+             revertError && !eligibilityCheck?.eligible ? 'Cannot Revert' : 'Confirm Revert'}
+          </CModalTitle>
         </CModalHeader>
         <CModalBody>
-          {revertSuccess ? (
-            <CAlert color="success">{revertSuccess}</CAlert>
+          {checkingEligibility ? (
+            <div className="text-center p-4">
+              <CSpinner color="primary" />
+              <p className="mt-3">Checking revert eligibility...</p>
+            </div>
+          ) : revertSuccess ? (
+            <CAlert color="success" className="mb-0">
+              <CIcon icon={cilCheck} className="me-2" />
+              {revertSuccess}
+            </CAlert>
           ) : (
             <>
-              {revertError && <CAlert color="danger">{revertError}</CAlert>}
-              <p>Are you sure you want to revert this damage item?</p>
-              {itemToRevert && (
-                <div className="border p-3 rounded">
-                  <p><strong>Product:</strong> {itemToRevert.product}</p>
-                  <p><strong>Quantity:</strong> {itemToRevert.qty}</p>
-                  <p><strong>Branch:</strong> {itemToRevert.center}</p>
-                  <p><strong>Date:</strong> {formatDate(itemToRevert.date)}</p>
-                  {itemToRevert.damageReason && (
-                    <p><strong>Damage Reason:</strong> {itemToRevert.damageReason}</p>
-                  )}
+              {revertError && (
+                <CAlert color="danger" className="mb-3">
+                  <CIcon icon={cilWarning} className="me-2" />
+                  {revertError}
+                </CAlert>
+              )}
+              
+              {eligibilityCheck && !eligibilityCheck.eligible && eligibilityCheck.details && (
+                <div className="mb-3">
+                  <h6>Revert Eligibility Details:</h6>
+                  <CTable bordered size="sm">
+                    <CTableHead>
+                      <CTableRow>
+                        <CTableHeaderCell>Product</CTableHeaderCell>
+                        <CTableHeaderCell>Status</CTableHeaderCell>
+                        <CTableHeaderCell>Message</CTableHeaderCell>
+                      </CTableRow>
+                    </CTableHead>
+                    <CTableBody>
+                      {eligibilityCheck.details.items?.map((detail, idx) => (
+                        <CTableRow key={idx}>
+                          <CTableDataCell>{detail.product}</CTableDataCell>
+                          <CTableDataCell>
+                            <CBadge color={detail.status === 'pending_damage' ? 'warning' : 'danger'}>
+                              {detail.status}
+                            </CBadge>
+                          </CTableDataCell>
+                          <CTableDataCell>{detail.message}</CTableDataCell>
+                        </CTableRow>
+                      ))}
+                    </CTableBody>
+                  </CTable>
                 </div>
               )}
-              <p className="text-warning mt-3">
-                <strong>Note:</strong> This will move the item back to available stock.
-              </p>
+              
+              {eligibilityCheck?.eligible && itemToRevert && (
+                <>
+                  <p>Are you sure you want to revert this damage item?</p>
+                  <div className="border p-3 rounded mb-3">
+                    <CTable bordered size="sm">
+                      <CTableBody>
+                        <CTableRow>
+                          <CTableHeaderCell width="30%">Product</CTableHeaderCell>
+                          <CTableDataCell><strong>{itemToRevert.product}</strong></CTableDataCell>
+                        </CTableRow>
+                        <CTableRow>
+                          <CTableHeaderCell>Quantity</CTableHeaderCell>
+                          <CTableDataCell>
+                            <span className="fw-bold">{itemToRevert.qty}</span>
+                            {itemToRevert.trackSerialNumber === "Yes" && itemToRevert.serialNumberCount > 0 && (
+                              <CBadge color="info" className="ms-2">
+                                {itemToRevert.serialNumberCount} serials
+                              </CBadge>
+                            )}
+                          </CTableDataCell>
+                        </CTableRow>
+                        <CTableRow>
+                          <CTableHeaderCell>Branch</CTableHeaderCell>
+                          <CTableDataCell>{itemToRevert.center}</CTableDataCell>
+                        </CTableRow>
+                        <CTableRow>
+                          <CTableHeaderCell>Date</CTableHeaderCell>
+                          <CTableDataCell>{formatDate(itemToRevert.date)}</CTableDataCell>
+                        </CTableRow>
+                        {itemToRevert.damageReason && (
+                          <CTableRow>
+                            <CTableHeaderCell>Damage Reason</CTableHeaderCell>
+                            <CTableDataCell>{itemToRevert.damageReason}</CTableDataCell>
+                          </CTableRow>
+                        )}
+                      </CTableBody>
+                    </CTable>
+                  </div>
+                  
+                  <div className="mb-3">
+                    <CFormLabel htmlFor="revertRemark">Revert Remark (Optional)</CFormLabel>
+                    <CFormInput
+                      id="revertRemark"
+                      type="text"
+                      value={revertRemark}
+                      onChange={(e) => setRevertRemark(e.target.value)}
+                      placeholder="Enter reason for reverting this damage"
+                    />
+                  </div>
+                  
+                  <p className="text-warning mt-3">
+                    <CIcon icon={cilWarning} className="me-2" />
+                    <strong>Note:</strong> This will move the item back to available stock and remove it from faulty stock.
+                  </p>
+                </>
+              )}
             </>
           )}
         </CModalBody>
@@ -538,15 +652,15 @@ const RevertDamage = () => {
           <CButton 
             color="secondary" 
             onClick={() => setRevertModalVisible(false)}
-            disabled={revertLoading}
+            disabled={revertLoading || checkingEligibility}
           >
             {revertSuccess ? 'Close' : 'Cancel'}
           </CButton>
-          {!revertSuccess && (
+          {!revertSuccess && eligibilityCheck?.eligible && (
             <CButton 
-              color="primary" 
+              className='reset-button'
               onClick={confirmRevert}
-              disabled={revertLoading}
+              disabled={revertLoading || checkingEligibility}
             >
               {revertLoading ? <CSpinner size="sm" /> : 'Confirm Revert'}
             </CButton>
@@ -588,7 +702,9 @@ const RevertDamage = () => {
         
         <CCardBody>
           <div className="d-flex justify-content-between mb-3">
-            <div></div>
+            <div className="text-muted">
+              Showing {filteredData.length} items
+            </div>
             <div className='d-flex'>
               <CFormLabel className='mt-1 m-1'>Search:</CFormLabel>
               <CFormInput
@@ -597,7 +713,6 @@ const RevertDamage = () => {
                 className="d-inline-block square-search"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search in current page..."
               />
             </div>
           </div>
@@ -609,17 +724,14 @@ const RevertDamage = () => {
                   <CTableHeaderCell scope="col" onClick={() => handleSort('date')} className="sortable-header">
                     Date {getSortIcon('date')}
                   </CTableHeaderCell>
-                  <CTableHeaderCell scope="col" onClick={() => handleSort('usageType')} className="sortable-header">
-                    Type {getSortIcon('usageType')}
-                  </CTableHeaderCell>
                   <CTableHeaderCell scope="col" onClick={() => handleSort('center')} className="sortable-header">
                     Branch {getSortIcon('center')}
                   </CTableHeaderCell>
                   <CTableHeaderCell scope="col" onClick={() => handleSort('product')} className="sortable-header">
                     Product {getSortIcon('product')}
                   </CTableHeaderCell>
-                  <CTableHeaderCell scope="col" onClick={() => handleSort('product')} className="sortable-header">
-                    Damage Reason {getSortIcon('product')}
+                  <CTableHeaderCell scope="col" onClick={() => handleSort('damageReason')} className="sortable-header">
+                    Damage Reason {getSortIcon('damageReason')}
                   </CTableHeaderCell>
                   <CTableHeaderCell scope="col" onClick={() => handleSort('qty')} className="sortable-header">
                     Qty {getSortIcon('qty')}
@@ -635,30 +747,28 @@ const RevertDamage = () => {
                     {filteredData.map((item) => (
                       <CTableRow key={item._id}>
                         <CTableDataCell>{formatDate(item.date)}</CTableDataCell>
-                        <CTableDataCell>{item.usageType}</CTableDataCell>
                         <CTableDataCell>{item.center}</CTableDataCell>
                         <CTableDataCell>
                           {item.product}
                         </CTableDataCell>
-                        <CTableDataCell>
-                          {item.damageReason}
-                        </CTableDataCell>
+                        <CTableDataCell>{item.damageReason || 'N/A'}</CTableDataCell>
                         <CTableDataCell>
                           <div className="d-flex align-items-center justify-content-between">
                             <span className="fw-bold">{item.qty}</span>
                             {item.trackSerialNumber === "Yes" && item.serialNumberCount > 0 && (
-                              <span
-                                onClick={() => handleShowSerialNumbers(item)}
-                                title={`Click to view ${item.serialNumberCount} serial number(s)`}
-                                style={{
-                                  fontSize: '18px',
-                                  cursor: 'pointer',
-                                  color: '#337ab7',
-                                  marginLeft: '8px'
-                                }}
-                              >
-                                ☰
-                              </span>
+                              <CTooltip content={`Click to view ${item.serialNumberCount} serial number(s)`}>
+                                <span
+                                  onClick={() => handleShowSerialNumbers(item)}
+                                  style={{
+                                    fontSize: '18px',
+                                    cursor: 'pointer',
+                                    color: '#337ab7',
+                                    marginLeft: '8px'
+                                  }}
+                                >
+                                  ☰
+                                </span>
+                              </CTooltip>
                             )}
                           </div>
                         </CTableDataCell>
@@ -667,7 +777,7 @@ const RevertDamage = () => {
                             size="sm"
                             className="action-btn"
                             onClick={() => handleRevertClick(item)}
-                            title="Revert damage item back to stock"
+                            disabled={revertLoading}
                           >
                             <CIcon icon={cilReload} className='icon' /> Revert
                           </CButton>
@@ -675,10 +785,10 @@ const RevertDamage = () => {
                       </CTableRow>
                     ))}
                     <CTableRow className='total-row'>
-                      <CTableDataCell colSpan="5" className="text-end fw-bold">
+                      <CTableDataCell colSpan="4" className="text-end fw-bold">
                         Total Quantity:
                       </CTableDataCell>
-                      <CTableDataCell colSpan="2">
+                      <CTableDataCell colSpan="3">
                         <div className="d-flex align-items-center">
                           <span className="fw-bold">{totals.total.toFixed(2)}</span>
                         </div>
@@ -687,8 +797,8 @@ const RevertDamage = () => {
                   </>
                 ) : (
                   <CTableRow>
-                    <CTableDataCell colSpan="6" className="text-center">
-                      No damage records found
+                    <CTableDataCell colSpan="7" className="text-center">
+                      No completed damage records found
                     </CTableDataCell>
                   </CTableRow>
                 )}

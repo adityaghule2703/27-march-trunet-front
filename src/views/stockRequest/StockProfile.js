@@ -48,7 +48,7 @@ const StockProfile = () => {
   const isCenter = data?.center?._id === userCenterId;
   const isWarehouse = data?.warehouse?._id === userCenterId;
 
-  const showStockQty = userRole === 'admin';
+  const showStockQty = userRole === 'admin' || 'superadmin';
 
   const [shipmentData, setShipmentData] = useState({
     shippedDate: '',

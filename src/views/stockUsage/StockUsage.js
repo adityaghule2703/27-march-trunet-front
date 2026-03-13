@@ -74,7 +74,6 @@ const StockUsage = () => {
           setCurrentPage(response.data.pagination.currentPage);
           setTotalPages(response.data.pagination.totalPages);
         } else {
-          // throw new Error('API returned unsuccessful response');
           throw new Error(response.data.message || 'API returned unsuccessful response');
         }
       } else {
@@ -110,20 +109,11 @@ const StockUsage = () => {
         }
       }
     } catch (err) {
-    //   setError(err.message);
-    //   console.error('Error fetching data:', err);
-    // } 
-    // finally {
-    //   setLoading(false);
-    // }
-
-
     if (err.response) {
       if (err.response.data) {
 
         if (err.response.data.success === false && err.response.data.message) {
           setError(err.response.data.message);
-          // showError(err.response.data.message);
         } else {
           setError(err.response.data.message || err.response.statusText);
         }
@@ -378,8 +368,11 @@ const StockUsage = () => {
             detail = `Control Room: ${request.fromControlRoom?.buildingName || 'N/A'}`; 
             break;
           case 'Damage':
-            detail = 'Pending Damage Return';
-            break;
+            detail = `${request.damageReason || 'N/A'}`;
+  if (request.status === 'cancelled') {
+    detail += ` [REVERTED: ${request.revertRemark || 'No reason provided'}]`;
+  }
+  break;
           case 'Damage Return':
             detail = `Returned from: ${request.originalUsageType || 'N/A'}`;
             break;
@@ -573,9 +566,12 @@ const StockUsage = () => {
         <CTableBody>
           {filteredCustomers.length > 0 ? (
             filteredCustomers.map((customer) => (
-              <CTableRow key={customer._id} className={
-                customer.type === 'Damage Return' ? 'damage-row' : ''
-              }>
+              <CTableRow key={customer._id} 
+              className={`
+                ${customer.type === 'Damage Return' ? 'damage-row' : ''} 
+                ${customer.status === 'cancelled' ? 'row-cancelled' : ''}
+              `}
+              >
                 <CTableDataCell>
                   <button 
                     className="btn btn-link p-0 text-decoration-none"
@@ -606,7 +602,19 @@ const StockUsage = () => {
                   ) : customer.usageType === 'Control Room' ? (
                     `Control Room: ${customer.controlRoom?.name || 'N/A'}`
                   ) : customer.usageType === 'Damage' ? (
-                    'Pending Damage Return'
+                    // `${customer.damageReason} `
+                    <div>
+                     {customer.damageReason || 'N/A'}
+                    {customer.status === 'cancelled' && (
+                      <div className="cancelled-detail mt-1">
+                        <CIcon icon={cilSettings} className="cancelled-icon" />
+                        <strong>Reverted:</strong> {customer.revertRemark || 'No reason provided'}
+                        {customer.revertDate && (
+                          <div><small>on {formatDate(customer.revertDate)}</small></div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                   ) : customer.usageType === 'Damage Return' ? (
                     `Pending Damage Return`
                   ) : customer.usageType === 'Stolen from Field' ? (

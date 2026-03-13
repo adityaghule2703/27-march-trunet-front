@@ -229,6 +229,9 @@ background-color: #d9edf7 !important;
 .damage-row td{
 background-color: #d9edf7;
 }
+.row-cancelled td{
+  background-color: #f2dede !important;
+}
 .total-row td {
 background-color: #dff0d8 !important;
 }

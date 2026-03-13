@@ -61,7 +61,6 @@ const UsageReplace = () => {
       }
       
       params.append('page', page);
-      params.append('limit', 10);
       
       const url = `/reports/replace-report?${params.toString()}`;
       const response = await axiosInstance.get(url);

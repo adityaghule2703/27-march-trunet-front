@@ -1,5 +1,5 @@
-// InvoiceSearch.js
-import React, { useState, useEffect } from 'react'
+
+import React, { useState } from 'react'
 import {
   CModal,
   CModalHeader,
@@ -9,7 +9,6 @@ import {
   CButton,
   CFormInput,
   CFormSelect,
-  CFormCheck
 } from '@coreui/react'
 import PropTypes from 'prop-types'
 import '../../css/search.css';
@@ -85,17 +84,12 @@ const InvoiceSearch = ({ visible, onClose, onSearch, centers, resellers }) => {
     });
   }
 
-  // Status options
   const statusOptions = [
     { value: '', label: 'All Status' },
     { value: 'generated', label: 'Generated' },
-    { value: 'sent', label: 'Sent' },
-    { value: 'paid', label: 'Paid' },
     { value: 'cancelled', label: 'Cancelled' },
-    { value: 'active', label: 'Active (Non-Cancelled)' }
   ];
 
-  // Credit note options
   const creditNoteOptions = [
     { value: '', label: 'All' },
     { value: 'true', label: 'With Credit Note' },
@@ -110,7 +104,6 @@ const InvoiceSearch = ({ visible, onClose, onSearch, centers, resellers }) => {
         </CModalHeader>
 
         <CModalBody>
-          {/* Invoice Number Search */}
           <div className="form-row">
             <div className="form-group full-width">
               <label className="form-label">Invoice Number</label>
@@ -119,13 +112,9 @@ const InvoiceSearch = ({ visible, onClose, onSearch, centers, resellers }) => {
                 name="invoiceNumber"
                 value={searchData.invoiceNumber}
                 onChange={handleChange}
-                placeholder="Search by invoice number..."
                 className="no-radius-input"
               />
             </div>
-          </div>
-
-          <div className="form-row">
             <div className="form-group">
               <label className="form-label">Reseller</label>
               <Select
@@ -157,6 +146,9 @@ const InvoiceSearch = ({ visible, onClose, onSearch, centers, resellers }) => {
                 className="no-radius-input"
               />
             </div>
+          </div>
+
+          <div className="form-row">
             <div className="form-group">
               <label className="form-label">Branch</label>
               <Select
@@ -188,9 +180,6 @@ const InvoiceSearch = ({ visible, onClose, onSearch, centers, resellers }) => {
                 className="no-radius-input"
               />
             </div>
-          </div>
-        
-          <div className="form-row">
             <div className="form-group">
               <label className="form-label">Date Range</label>
               <DatePicker
@@ -202,6 +191,9 @@ const InvoiceSearch = ({ visible, onClose, onSearch, centers, resellers }) => {
                 className="no-radius-input date-input"
               />
             </div>
+          </div>
+        
+          <div className="form-row">
             <div className="form-group">
               <label className="form-label">Status</label>
               <CFormSelect
@@ -217,9 +209,6 @@ const InvoiceSearch = ({ visible, onClose, onSearch, centers, resellers }) => {
                 ))}
               </CFormSelect>
             </div>
-          </div>
-
-          <div className="form-row">
             <div className="form-group">
               <label className="form-label">Cancel with Credit Note</label>
               <CFormSelect
@@ -237,9 +226,6 @@ const InvoiceSearch = ({ visible, onClose, onSearch, centers, resellers }) => {
               <small className="text-muted">
                 Note: This filter only applies to cancelled invoices
               </small>
-            </div>
-            <div className="form-group">
-              {/* Empty for layout balance */}
             </div>
           </div>
         </CModalBody>
