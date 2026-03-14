@@ -265,7 +265,7 @@ const ProductSerialTrack = () => {
       if (activeSearch.keyword) {
         params.append('search', activeSearch.keyword);
       }
-    //  params.append('export','true'); 
+     params.append('export','true'); 
       const apiUrl = `/reports/serialreport?${params.toString()}`;
       const response = await axiosInstance.get(apiUrl);
       

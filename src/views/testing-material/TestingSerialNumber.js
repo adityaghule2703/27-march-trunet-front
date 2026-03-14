@@ -38,7 +38,6 @@ const TestingSerialNumber = ({
   const srNumbers = Array.from({ length: usageQty }, (_, i) => i + 1);
 
   useEffect(() => {
-    // Get user center ID on component mount
     const getUserCenter = async () => {
       try {
         const response = await axiosInstance.get('/auth/me');
@@ -221,7 +220,7 @@ const TestingSerialNumber = ({
               </small>
             </div>
             
-            <CTable bordered striped responsive>
+            <CTable bordered striped>
               <CTableHead>
                 <CTableRow>
                   <CTableHeaderCell width="15%">SR.</CTableHeaderCell>

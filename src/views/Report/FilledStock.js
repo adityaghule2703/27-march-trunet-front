@@ -290,7 +290,7 @@ const FilledStock = () => {
       if (activeSearch.center) {
         params.append('center', activeSearch.center);
       }
-      // params.append('export','true');
+       params.append('export','true');
       const apiUrl = params.toString() 
         ? `/reports/filledstock-report?${params.toString()}` 
         : '/reports/filledstock-report';

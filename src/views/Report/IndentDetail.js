@@ -384,7 +384,7 @@ const IndentDetail = () => {
         params.append('startDate', activeSearch.startDate);
         params.append('endDate', activeSearch.endDate);
       }
-      // params.append('export','true');
+      params.append('export','true');
       const apiUrl = `/reports/requests?${params.toString()}`;
       const response = await axiosInstance.get(apiUrl);
       

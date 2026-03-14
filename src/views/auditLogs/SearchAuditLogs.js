@@ -15,7 +15,7 @@ import Select from 'react-select'
 const SearchAuditLogs = ({ visible, onClose, onSearch, centers }) => {
   const [searchData, setSearchData] = useState({
     keyword: '',
-    center: '' // This will be user ID filter
+    center: ''
   })
 
   useEffect(() => {
@@ -62,7 +62,9 @@ const SearchAuditLogs = ({ visible, onClose, onSearch, centers }) => {
           </div>
 
           <div className="form-group">
-            <label className="form-label" htmlFor="center">
+
+
+          {/* <label className="form-label" htmlFor="center">
               Branch
             </label>
             <Select
@@ -92,7 +94,9 @@ const SearchAuditLogs = ({ visible, onClose, onSearch, centers }) => {
               isClearable
               classNamePrefix="react-select"
               className="no-radius-input"
-            />
+            /> */}
+
+
           </div>
         </div>
       </CModalBody>

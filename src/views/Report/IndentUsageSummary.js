@@ -263,7 +263,7 @@ const IndentUsageSummary = () => {
         params.append('month', month);
         params.append('year', year);
       }
-      // params.append('export','true');
+       params.append('export','true');
       const apiUrl = params.toString()
         ? `/reports/indent-usage-summary?${params.toString()}`
         : '/reports/indent-usage-summary';

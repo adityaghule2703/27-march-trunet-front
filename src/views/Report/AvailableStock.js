@@ -39,37 +39,6 @@ const AvailableStock = () => {
 
   const dropdownRefs = useRef({});
 
-  // const fetchData = async (searchParams = {}, page = 1) => {
-  //   try {
-  //     setLoading(true);
-  //     const params = new URLSearchParams();
-      
-  //     if (searchParams.product) {
-  //       params.append('product', searchParams.product);
-  //     }
-  //     if (searchParams.center) {
-  //       params.append('center', searchParams.center);
-  //     }
-  //     params.append('page', page);
-  //     const url = params.toString() ? `/availableStock/availableStock?${params.toString()}` : '/availableStock/availableStock';
-  //     const response = await axiosInstance.get(url);
-      
-  //     if (response.data.success) {
-  //       setData(response.data.data.stock);
-  //       setCurrentPage(response.data.data.pagination.currentPage);
-  //       setTotalPages(response.data.data.pagination.totalPages);
-  //     } else {
-  //       throw new Error('API returned unsuccessful response');
-  //     }
-  //   } catch (err) {
-  //     setError(err.message);
-  //     console.error('Error fetching data:', err);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-
  const fetchData = async (searchParams = {}, page = 1) => {
     try {
       setLoading(true);
