@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CCard, CCardBody, CButton, CSpinner, CContainer, CTable, CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell, CFormInput, CFormText, CAlert, CBadge, CTooltip } from '@coreui/react';
@@ -16,6 +14,7 @@ import ReceivedSerialNumbers from './ReceivedSerialNumbers';
 import usePermission from 'src/utils/usePermission';
 import ChallanModal from './ChallanModal';
 import Swal from 'sweetalert2';
+
 const StockProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -85,9 +84,22 @@ const StockProfile = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        console.log('Fetching stock request data for ID:', id);
         const response = await axiosInstance.get(`/stockrequest/${id}`);
         if (response.data.success) {
           const stockData = response.data.data;
+          console.log('Fetched stock data:', stockData);
+          console.log('Products in stock data:', stockData.products);
+          
+          // Log received quantities from API
+          stockData.products.forEach((item, index) => {
+            console.log(`Product ${index + 1}: ${item.product?.productTitle}`, {
+              receivedQuantity: item.receivedQuantity,
+              approvedQuantity: item.approvedQuantity,
+              status: item.status
+            });
+          });
+          
           setData(stockData);
 
           const initialApproved = stockData.products.map(item => ({
@@ -150,20 +162,84 @@ const StockProfile = () => {
 
   const handleBack = () => navigate('/stock-request');
 
+  // Updated useEffect for productReceipts with console logs
   useEffect(() => {
     if (data?.products) {
-      const initialReceipts = data.products.map(item => ({
-        productId: item.product?._id, 
-        receivedQuantity: item.receivedQuantity || 0,
-        receivedRemark: item.receivedRemark,
-      }));
+      console.log('Initializing productReceipts from data.products');
+      console.log('Current data.products:', data.products);
+      
+      const initialReceipts = data.products.map(item => {
+        const receivedQty = item.receivedQuantity !== undefined && item.receivedQuantity !== null 
+          ? item.receivedQuantity 
+          : '';
+        
+        console.log(`Product: ${item.product?.productTitle}`, {
+          originalReceivedQuantity: item.receivedQuantity,
+          approvedQuantity: item.approvedQuantity,
+          setReceivedQuantity: receivedQty,
+          receivedRemark: item.receivedRemark || ''
+        });
+        
+        return {
+          productId: item.product?._id,
+          productTitle: item.product?.productTitle,
+          receivedQuantity: receivedQty,
+          receivedRemark: item.receivedRemark || '',
+        };
+      });
+      
+      console.log('Initial productReceipts state:', initialReceipts);
       setProductReceipts(initialReceipts);
     }
   }, [data]);
+
+  // Auto-fill received quantity with approved quantity for center users
+  useEffect(() => {
+    // Only auto-fill when:
+    // 1. Data is loaded
+    // 2. Status is Shipped
+    // 3. User is center
+    // 4. User is viewing their own center
+    // 5. Product receipts are initialized
+    if (data?.status === 'Shipped' && userCenterType === 'center' && isCenter && data?.products && productReceipts.length > 0) {
+      let needsUpdate = false;
+      const updatedReceipts = productReceipts.map(receipt => {
+        const product = data.products.find(p => p.product?._id === receipt.productId);
+        // If received quantity is empty or 0, and approved quantity exists, auto-fill
+        if (product && 
+            (receipt.receivedQuantity === undefined || 
+             receipt.receivedQuantity === null || 
+             receipt.receivedQuantity === '' || 
+             receipt.receivedQuantity === 0) && 
+            product.approvedQuantity && 
+            product.approvedQuantity > 0) {
+          needsUpdate = true;
+          console.log(`Auto-filling ${product.product?.productTitle} with approved quantity: ${product.approvedQuantity}`);
+          return {
+            ...receipt,
+            receivedQuantity: product.approvedQuantity
+          };
+        }
+        return receipt;
+      });
+      
+      if (needsUpdate) {
+        console.log('Auto-filling received quantities with approved quantities:', updatedReceipts);
+        setProductReceipts(updatedReceipts);
+      }
+    }
+  }, [data, userCenterType, isCenter, productReceipts.length]);
   
   const handleReceiptChange = (productId, field, value) => {
+    console.log(`Updating receipt for product ${productId}:`, { field, value });
     setProductReceipts(prev =>
-      prev.map(p => (p.productId === productId ? { ...p, [field]: value } : p))
+      prev.map(p => {
+        if (p.productId === productId) {
+          console.log(`Updated product receipt:`, { ...p, [field]: value });
+          return { ...p, [field]: value };
+        }
+        return p;
+      })
     );
   };
 
@@ -342,12 +418,18 @@ const handleCancelShipment = async () => {
 
 const handleCompleteIndent = async () => {
   try {
+    console.log('Completing indent with productReceipts:', productReceipts);
+    
     if (userCenterType === 'center') {
       const missingReceipts = productReceipts.filter(item => 
-        !item.receivedQuantity || item.receivedQuantity === ''
+        item.receivedQuantity === undefined || 
+        item.receivedQuantity === null || 
+        item.receivedQuantity === '' ||
+        isNaN(Number(item.receivedQuantity))
       );
 
       if (missingReceipts.length > 0) {
+        console.log('Missing receipts:', missingReceipts);
         setAlert({
           type: 'danger',
           message: 'Please enter received quantity for all products before completing the indent',
@@ -373,6 +455,8 @@ const handleCompleteIndent = async () => {
       }));
     }
 
+    console.log('Complete indent payload:', payload);
+    
     const response = await axiosInstance.post(`/stockrequest/${id}/complete`, {
       productReceipts: payload,
     });
@@ -470,64 +554,10 @@ const handleUpdateShipment = async (shipmentData) => {
   }
 };
 
-// const handleMarkIncomplete = async (remark) => {
-//   try {
-//     if (userCenterType === 'center') {
-//       const missingReceipts = productReceipts.filter(item => 
-//         !item.receivedQuantity || item.receivedQuantity === '' || Number(item.receivedQuantity) <= 0
-//       );
-
-//       if (missingReceipts.length > 0) {
-//         setAlert({
-//           type: 'danger',
-//           message: 'Please enter received quantity for all products before marking as incomplete',
-//           visible: true,
-//         });
-//         return;
-//       }
-//     }
-//     const receivedProducts = productReceipts.map(item => ({
-//       productId: item.productId,
-//       receivedQuantity: Number(item.receivedQuantity) || 0,
-//       receivedRemark: item.receivedRemark || '',
-//     }));
-//     const payload = {
-//       incompleteRemark: remark,
-//       receivedProducts,
-//     };
-//     console.log('Incomplete Payload:', payload);
-//     const response = await axiosInstance.post(
-//       `/stockrequest/${id}/mark-incomplete`,
-//       payload
-//     );
-
-//     if (response.data.success) {
-//       setAlert({
-//         type: 'success',
-//         message: 'Stock request marked as incomplete',
-//         visible: true,
-//       });
-//       setIncompleteModal(false);
-//      setTimeout(() => window.location.reload(), 1000);
-//     } else {
-//       setAlert({
-//         type: 'danger',
-//         message: 'Failed to mark incomplete',
-//         visible: true,
-//       });
-//     }
-//   } catch (err) {
-//     console.error(err);
-//     setAlert({
-//       type: 'danger',
-//       message: 'Error marking incomplete',
-//       visible: true,
-//     });
-//   }
-// };
-
 const handleMarkIncomplete = async (remark) => {
   try {
+    console.log('Marking as incomplete with productReceipts:', productReceipts);
+    
     if (userCenterType === 'center') {
       const missingReceipts = productReceipts.filter(item => 
         item.receivedQuantity === undefined || 
@@ -537,6 +567,7 @@ const handleMarkIncomplete = async (remark) => {
       );
 
       if (missingReceipts.length > 0) {
+        console.log('Missing receipts:', missingReceipts);
         setAlert({
           type: 'danger',
           message: 'Please enter received quantity for all products before marking as incomplete',
@@ -653,6 +684,7 @@ const handleIncomplete = async () => {
     });
   }
 };
+
 const handleApprovedBlur = (productId, value) => {
     if (value === '' || !/^\d+$/.test(value)) {
       setErrors(prev => ({ ...prev, [productId]: 'The input value was not a correct number' }));
@@ -966,8 +998,7 @@ const handlePrintIndent = () => {
             return `
               <tr>
                 <td>${index + 1}</td>
-                <td>${item.product?.productTitle || ''}
-                </td>
+                <td>${item.product?.productTitle || ''}</td>
                 <td>${item.quantity || 0}</td>
                 <td>${item.salePrice.toFixed(2)}</td>
                 <td>${item.total.toFixed(2)}</td>
@@ -980,28 +1011,28 @@ const handlePrintIndent = () => {
       </table>
       <!-- New table format for info grid with 2 items per row -->
 <table class="info-table">
-  <tr>
+   <tr>
     <td class="label">Approved On</td>
     <td class="value">${formatDateTime(data.approvalInfo?.approvedAt) || 'March 6, 2026'}</td>
     <td class="label">Shipment Date</td>
     <td class="value">${formatDate(data.shippingInfo?.shippedDate) || 'March 6, 2026'}</td>
-  </tr>
-  <tr>
+   </tr>
+   <tr>
     <td class="label">Expected Delivery</td>
     <td class="value">${formatDate(data.shippingInfo?.expectedDeliveryDate) || formatDate(data.shippingInfo?.shippedDate) || 'March 6, 2026'}</td>
     <td class="label">Completed On</td>
     <td class="value">${formatDateTime(data.completedOn) || '07 Mar 2026'}</td>
-  </tr>
-  <tr>
+   </tr>
+   <tr>
     <td class="label">Shipment Detail</td>
     <td class="value">${data.shippingInfo?.shipmentDetail || ''}</td>
     <td class="label">Shipment Remark</td>
     <td class="value">${data.shippingInfo?.shipmentRemark || ''}</td>
-  </tr>
-  <tr>
+   </tr>
+   <tr>
     <td class="label">Remark</td>
     <td class="value" colspan="3">${data.remark || ''}</td>
-  </tr>
+   </tr>
 </table>
       <!-- Signature on right side -->
       <div class="footer">
@@ -1075,7 +1106,7 @@ const handlePrintIndent = () => {
                 <td className="profile-value-cell">{data.orderNumber || ''}</td>
 
                 <td className="profile-label-cell">Shipment Date:</td>
-                <td className="profile-value-cell">{formatDate(data.shippingInfo.shippedDate || '')}</td>
+                <td className="profile-value-cell">{formatDate(data.shippingInfo?.shippedDate || '')}</td>
 
                 <td className="profile-label-cell">Completed on:</td>
                 <td className="profile-value-cell">{formatDateTime(data.completionInfo?.completedOn || '')}</td>
@@ -1086,7 +1117,7 @@ const handlePrintIndent = () => {
                 <td className="profile-value-cell">{data.date || ''}</td>
 
                 <td className="profile-label-cell">Expected Delivery:</td>
-                <td className="profile-value-cell">{formatDate(data.shippingInfo.expectedDeliveryDate || '')}</td>
+                <td className="profile-value-cell">{formatDate(data.shippingInfo?.expectedDeliveryDate || '')}</td>
 
                 <td className="profile-label-cell">Completed by:</td>
                 <td className="profile-value-cell">{data.completionInfo?.completedBy?.fullName || ''}</td>
@@ -1144,7 +1175,7 @@ const handlePrintIndent = () => {
 
               <tr className="table-row">
                 <td className="profile-label-cell">Approved by:</td>
-                <td className="profile-value-cell">{data.approvalInfo?.approvedBy.fullName || ''}</td>
+                <td className="profile-value-cell">{data.approvalInfo?.approvedBy?.fullName || ''}</td>
 
                 <td className="profile-label-cell">Shipped by:</td>
                 <td className="profile-value-cell">{data.shippingInfo?.shippedBy?.fullName || ''}</td>
@@ -1297,26 +1328,43 @@ const handlePrintIndent = () => {
               {data.products?.length > 0 ? (
                 data.products.map(item => {
                   const approvedItem = approvedProducts.find(p => p._id === item._id) || {};
-                  const hasTransferredSerials = item.product?.trackSerialNumber === "Yes" && 
-                    item.transferredSerials && item.transferredSerials.length > 0;
                   
-                    const receivedQty = productReceipts.find(p => p.productId === item.product?._id)?.receivedQuantity || 
-                    item.receivedQuantity || 0;
+                  // Get the current receipt value - now directly from productReceipts
+                  const currentReceipt = productReceipts.find(p => p.productId === item.product?._id);
+                  const receivedQtyValue = currentReceipt?.receivedQuantity !== undefined && 
+                                           currentReceipt?.receivedQuantity !== '' 
+                                           ? currentReceipt.receivedQuantity 
+                                           : '';
+                  
+                  const receivedRemarkValue = currentReceipt?.receivedRemark !== undefined 
+                    ? currentReceipt.receivedRemark 
+                    : (item.receivedRemark || '');
+                  
+                  console.log(`Rendering product: ${item.product?.productTitle}`, {
+                    currentReceipt,
+                    receivedQtyValue,
+                    receivedRemarkValue,
+                    originalReceivedQuantity: item.receivedQuantity,
+                    approvedQuantity: item.approvedQuantity,
+                    status: data.status,
+                    isCenter: isCenter,
+                    userCenterType: userCenterType
+                  });
 
-                    const approvedQty = approvedItem.approvedQty || item.approvedQuantity || 0;
-                    
-                    const shouldShowMismatch = data.status === 'Incompleted' || data.status === 'Completed';
-
-                    const isQuantityMismatch = shouldShowMismatch && (Number(receivedQty) !== Number(approvedQty));
+                  const approvedQty = approvedItem.approvedQty || item.approvedQuantity || 0;
+                  
+                  const shouldShowMismatch = data.status === 'Incompleted' || data.status === 'Completed';
+                  const isQuantityMismatch = shouldShowMismatch && (Number(receivedQtyValue) !== Number(approvedQty));
+                  
                   return (
                     <CTableRow key={item._id}
-                    className={isQuantityMismatch ? 'bg-quantity-mismatch' : ''}
+                      className={isQuantityMismatch ? 'bg-quantity-mismatch' : ''}
                     >
                       <CTableDataCell>{item.product?.productTitle || ''}</CTableDataCell>
                       <CTableDataCell>{item.centerStockQuantity || 0}</CTableDataCell>
                       <CTableDataCell>{item.quantity || 0}</CTableDataCell>
-                      { showStockQty && <CTableDataCell>{item.outletStock.availableQuantity || 0}</CTableDataCell>}
-                      <CTableDataCell>{item.resellerStock.availableQuantity || 0}</CTableDataCell>
+                      { showStockQty && <CTableDataCell>{item.outletStock?.availableQuantity || 0}</CTableDataCell>}
+                      <CTableDataCell>{item.resellerStock?.availableQuantity || 0}</CTableDataCell>
                       <CTableDataCell>{item.productRemark || ''}</CTableDataCell>
                       <CTableDataCell>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1367,12 +1415,13 @@ const handlePrintIndent = () => {
                           {userCenterType === 'center' && isCenter && data.status === 'Shipped' ? (
                             <CFormInput
                               type="text"
-                              value={productReceipts.find(p => p.productId === item.product?._id)?.receivedQuantity || ''}
+                              value={receivedQtyValue}
                               onChange={e => handleReceiptChange(item.product?._id, 'receivedQuantity', e.target.value)}
                               style={{ width: '80px' }}
+                              placeholder={item.approvedQuantity || 0}
                             />
                           ) : (
-                            <span>{item.receivedQuantity || 0}</span>
+                            <span>{receivedQtyValue || 0}</span>
                           )}
                           
                           {item.product?.trackSerialNumber === "Yes" && item.receivedQuantity > 0 && (
@@ -1380,7 +1429,7 @@ const handlePrintIndent = () => {
                               content={`Received serial numbers (${item.transferredSerials?.length || 0})`}
                             >
                               <span
-                               style={{ fontSize: '18px', cursor: 'pointer', color: '#337ab7' }}
+                                style={{ fontSize: '18px', cursor: 'pointer', color: '#337ab7' }}
                                 onClick={() => handleOpenReceivedSerialModal(item)}
                                 title="View Received Serial Numbers"
                               >
@@ -1395,7 +1444,7 @@ const handlePrintIndent = () => {
                         {userCenterType === 'center' && isCenter && data.status === 'Shipped' ? (
                           <CFormInput
                             type="text"
-                            value={productReceipts.find(p => p.productId === item.product?._id)?.receivedRemark || ''}
+                            value={receivedRemarkValue}
                             onChange={e => handleReceiptChange(item.product?._id, 'receivedRemark', e.target.value)}
                           />
                         ) : (
