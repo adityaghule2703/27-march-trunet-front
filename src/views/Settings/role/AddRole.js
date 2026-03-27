@@ -120,24 +120,24 @@ const permissionModules = [
       { label: 'Manage Control Room All Center', name: 'manage_control_room_all_center', description: 'Manage Control Room All Center' }
     ]
   },
-  {
-    module: 'Roles and Permissions',
-    permissions: [
-      { label: 'Create Role', name: 'create_role', description: 'Create Role' },
-      { label: 'View Role', name: 'view_role', description: 'View Role' },
-      { label: 'Update Role', name: 'update_role', description: 'Update Role' },
-      { label: 'Delete Role', name: 'delete_role', description: 'Delete Role' },
-    ]
-  },
-  {
-    module: 'User',
-    permissions: [
-      { label: 'Create User', name: 'create_user', description: 'Create User' },
-      { label: 'View User', name: 'view_user', description: 'View User' },
-      { label: 'Update User', name: 'update_user', description: 'Update User' },
-      { label: 'Delete User', name: 'delete_user', description: 'Delete User' },
-    ]
-  },
+  // {
+  //   module: 'Roles and Permissions',
+  //   permissions: [
+  //     { label: 'Create Role', name: 'create_role', description: 'Create Role' },
+  //     { label: 'View Role', name: 'view_role', description: 'View Role' },
+  //     { label: 'Update Role', name: 'update_role', description: 'Update Role' },
+  //     { label: 'Delete Role', name: 'delete_role', description: 'Delete Role' },
+  //   ]
+  // },
+  // {
+  //   module: 'User',
+  //   permissions: [
+  //     { label: 'Create User', name: 'create_user', description: 'Create User' },
+  //     { label: 'View User', name: 'view_user', description: 'View User' },
+  //     { label: 'Update User', name: 'update_user', description: 'Update User' },
+  //     { label: 'Delete User', name: 'delete_user', description: 'Delete User' },
+  //   ]
+  // },
   {
     module: 'Shifting',
     permissions: [
