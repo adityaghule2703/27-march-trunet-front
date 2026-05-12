@@ -2,10 +2,14 @@
 import React from 'react'
 import { Translation } from 'react-i18next'
 
+
+
 // Masters ..
 const StockRequest = React.lazy(() => import('./views/stockRequest/StockRequest'))
 const AddStockRequest = React.lazy(() => import('./views/stockRequest/AddStockRequest'))
 const StockRequestProfile = React.lazy(() => import('./views/stockRequest/StockProfile'))
+const SaleInvoiceProfile = React.lazy(() => import('./views/stockRequest/SaleInvoiceProfile'))
+const IndentDetailProfile = React.lazy(() => import('./views/stockRequest/IndentDetailProfile'))
 
 const StockPurchase = React.lazy(() => import('./views/stockPurchase/StockPurchase'))
 const AddStockPurchase = React.lazy(() => import('./views/stockPurchase/AddStockPurchase'))
@@ -343,6 +347,19 @@ const routes = [
     path: '/stockRequest-profile/:id',
      name: <Translation>{(t) => t('Stock Request Profile')}</Translation>,
     element: StockRequestProfile,
+    exact: true,
+  },
+
+   {
+    path: '/SaleInvoice-profile/:id',
+     name: <Translation>{(t) => t('Stock Request Profile')}</Translation>,
+    element: SaleInvoiceProfile,
+    exact: true,
+  },
+  {
+    path: '/IndentDetail-profile/:id',
+     name: <Translation>{(t) => t('Stock Request Profile')}</Translation>,
+    element: IndentDetailProfile,
     exact: true,
   },
 
