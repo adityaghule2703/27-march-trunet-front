@@ -18,14 +18,16 @@ import {
   CModalHeader,
   CModalTitle,
   CModal,
-  CModalBody
+  CModalBody,
+  CModalFooter,
+  CFormLabel
 } from '@coreui/react';
 import CIcon from '@coreui/icons-react';
 import { cilArrowTop, cilArrowBottom, cilSearch, cilZoomOut } from '@coreui/icons';
-import { CFormLabel } from '@coreui/react-pro';
+import { CFormLabel as CFormLabelPro } from '@coreui/react-pro';
 import axiosInstance from 'src/axiosInstance';
 import Pagination from 'src/utils/Pagination';
-import { showError } from 'src/utils/sweetAlerts';
+import { showError, showSuccess } from 'src/utils/sweetAlerts';
 import { formatDate } from 'src/utils/FormatDateTime';
 import ONUSearch from './ONUSearch';
 
@@ -35,10 +37,14 @@ const OnuTrackReport = () => {
   const [products, setProducts] = useState([]);
   const [resellers, setResellers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [exportLoading, setExportLoading] = useState(false);
   const [error, setError] = useState(null);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
   const [searchTerm, setSearchTerm] = useState('');
   const [searchModalVisible, setSearchModalVisible] = useState(false);
+  const [exportModalVisible, setExportModalVisible] = useState(false);
+  const [exportStartDate, setExportStartDate] = useState('');
+  const [exportEndDate, setExportEndDate] = useState('');
   const [activeSearch, setActiveSearch] = useState({ 
     product: '', 
     status: '', 
@@ -72,7 +78,12 @@ const OnuTrackReport = () => {
       if (searchParams.reseller) {
         params.append('reseller', searchParams.reseller);
       }
-
+      if (searchParams.startDate) {
+        params.append('startDate', searchParams.startDate);
+      }
+      if (searchParams.endDate) {
+        params.append('endDate', searchParams.endDate);
+      }
       
       params.append('page', page);
       const url = `/reports/onu-report?${params.toString()}`;
@@ -213,8 +224,14 @@ const OnuTrackReport = () => {
            activeSearch.status || 
            activeSearch.keyword || 
            activeSearch.reseller ||
-           activeSearch.usageType ||
-           activeSearch.customer;
+           activeSearch.startDate ||
+           activeSearch.endDate;
+  };
+
+  const openExportModal = () => {
+    setExportStartDate(activeSearch.startDate || '');
+    setExportEndDate(activeSearch.endDate || '');
+    setExportModalVisible(true);
   };
 
   const filteredData = data.filter(record => {
@@ -275,115 +292,17 @@ const OnuTrackReport = () => {
     setSerialModalVisible(true);
   };
 
-  if (loading) {
-    return (
-      <div className="d-flex justify-content-center align-items-center" style={{ height: '50vh' }}>
-        <CSpinner color="primary" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="alert alert-danger" role="alert">
-        {error}
-      </div>
-    );
-  }
-
-  // const generateDetailExport = async () => {
-  //   try {
-  //     setLoading(true);
-  //     const params = new URLSearchParams();
-      
-  //     if (activeSearch.product) {
-  //       params.append('product', activeSearch.product);
-  //     }
-  //     if (activeSearch.status) {
-  //       params.append('status', activeSearch.status);
-  //     }
-  //     if (activeSearch.keyword) {
-  //       params.append('search', activeSearch.keyword);
-  //     }
-  //     if (activeSearch.reseller) {
-  //       params.append('reseller', activeSearch.reseller);
-  //     }
-      
-  //     const apiUrl = `/reports/onu-report?${params.toString()}`;
-  //     const response = await axiosInstance.get(apiUrl);
-      
-  //     if (!response.data.success) {
-  //       throw new Error('API returned unsuccessful response');
-  //     }
-  
-  //     const exportData = response.data.data;
-      
-  //     if (!exportData || exportData.length === 0) {
-  //       showError('No data available for export');
-  //       return;
-  //     }
-  
-  //     const headers = [
-  //       'Activation Date',
-  //       'Customer',
-  //       'Serial Number',
-  //       'Connection Type',
-  //       'Reseller Name',
-  //       'Area',
-  //       'Center',
-  //       'ONU Amount',
-  //     ];
-  
-  //     const csvData = exportData.flatMap(record => 
-  //       record.items.flatMap(item => 
-  //         (item.serialNumbers || []).map(serial => [
-  //           formatDate(record.date),
-  //           record.customer?.username || '',
-  //           serial.serialNumber || serial,
-  //           record.connectionType || '',
-  //           record.center?.reseller?.businessName || '',
-  //           record.center?.area?.areaName || '',
-  //           record.center?.centerName || '',
-  //           record.onuCharges || 0,
-  //         ])
-  //       )
-  //     );
-  
-  //     const csvContent = [
-  //       headers.join(','),
-  //       ...csvData.map(row => 
-  //         row.map(field => {
-  //           const stringField = String(field || '');
-  //           return `"${stringField.replace(/"/g, '""')}"`;
-  //         }).join(',')
-  //       )
-  //     ].join('\n');
-  
-  //     const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-  //     const link = document.createElement('a');
-  //     const downloadUrl = URL.createObjectURL(blob);
-      
-  //     link.setAttribute('href', downloadUrl);
-  //     link.setAttribute('download', `Product Serial Report ${new Date().toISOString().split('T')[0]}.csv`);
-  //     link.style.visibility = 'hidden';
-      
-  //     document.body.appendChild(link);
-  //     link.click();
-  //     document.body.removeChild(link);
-  //     URL.revokeObjectURL(downloadUrl);
-    
-  //   } catch (error) {
-  //     console.error('Error generating export:', error);
-  //     showError('Error generating export file');
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-
   const generateDetailExport = async () => {
     try {
-      setLoading(true);
+      setExportLoading(true);
+      
+      // Validate dates
+      if (exportStartDate && exportEndDate && exportStartDate > exportEndDate) {
+        showError('Start date cannot be greater than end date');
+        setExportLoading(false);
+        return;
+      }
+      
       const params = new URLSearchParams();
       
       if (activeSearch.product) {
@@ -397,6 +316,14 @@ const OnuTrackReport = () => {
       }
       if (activeSearch.reseller) {
         params.append('reseller', activeSearch.reseller);
+      }
+      
+      // Use export modal date range (overrides active search dates)
+      if (exportStartDate) {
+        params.append('startDate', exportStartDate);
+      }
+      if (exportEndDate) {
+        params.append('endDate', exportEndDate);
       }
       
       const apiUrl = `/reports/onu-report?${params.toString()}`;
@@ -439,6 +366,19 @@ const OnuTrackReport = () => {
         )
       );
   
+      // Create filename with date range if applied
+      let filename = `ONU_Track_Report`;
+      if (exportStartDate && exportEndDate) {
+        filename += `_${exportStartDate}_to_${exportEndDate}`;
+      } else if (exportStartDate) {
+        filename += `_from_${exportStartDate}`;
+      } else if (exportEndDate) {
+        filename += `_until_${exportEndDate}`;
+      } else {
+        filename += `_${new Date().toISOString().split('T')[0]}`;
+      }
+      filename += '.csv';
+  
       const csvContent = [
         headers.join(','),
         ...csvData.map(row => 
@@ -454,21 +394,42 @@ const OnuTrackReport = () => {
       const downloadUrl = URL.createObjectURL(blob);
       
       link.setAttribute('href', downloadUrl);
-      link.setAttribute('download', `Product Serial Report ${new Date().toISOString().split('T')[0]}.csv`);
+      link.setAttribute('download', filename);
       link.style.visibility = 'hidden';
       
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(downloadUrl);
+      
+      showSuccess('Export completed successfully!');
+      setExportModalVisible(false);
+      setExportStartDate('');
+      setExportEndDate('');
     
     } catch (error) {
       console.error('Error generating export:', error);
       showError('Error generating export file');
     } finally {
-      setLoading(false);
+      setExportLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ height: '50vh' }}>
+        <CSpinner color="primary" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="alert alert-danger" role="alert">
+        {error}
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -482,6 +443,79 @@ const OnuTrackReport = () => {
         products={products}
         resellers={resellers}
       />
+
+      {/* Export Modal */}
+      <CModal visible={exportModalVisible} onClose={() => setExportModalVisible(false)} size="md">
+        <CModalHeader>
+          <CModalTitle>Export ONU Track Report</CModalTitle>
+        </CModalHeader>
+        
+        <CModalBody>
+          <div className="form-group mb-3">
+            <CFormLabel htmlFor="exportStartDate">Start Date (Optional)</CFormLabel>
+            <CFormInput
+              type="date"
+              id="exportStartDate"
+              value={exportStartDate}
+              onChange={(e) => setExportStartDate(e.target.value)}
+              placeholder="Select start date"
+            />
+            <small className="text-muted">Leave empty to include all records from beginning</small>
+          </div>
+          
+          <div className="form-group mb-3">
+            <CFormLabel htmlFor="exportEndDate">End Date (Optional)</CFormLabel>
+            <CFormInput
+              type="date"
+              id="exportEndDate"
+              value={exportEndDate}
+              onChange={(e) => setExportEndDate(e.target.value)}
+              placeholder="Select end date"
+            />
+            <small className="text-muted">Leave empty to include all records until today</small>
+          </div>
+
+          {/* Show current filters summary */}
+          {(activeSearch.product || activeSearch.status || activeSearch.reseller) && (
+            <div className="mt-3 p-2 bg-light rounded">
+              <strong>Current Filters:</strong>
+              <ul className="mb-0 mt-1">
+                {activeSearch.product && (
+                  <li><small>Product: {products.find(p => p._id === activeSearch.product)?.productTitle}</small></li>
+                )}
+                {activeSearch.status && (
+                  <li><small>Status: {activeSearch.status}</small></li>
+                )}
+                {activeSearch.reseller && (
+                  <li><small>Reseller: {resellers.find(r => r._id === activeSearch.reseller)?.businessName}</small></li>
+                )}
+                {activeSearch.keyword && (
+                  <li><small>Keyword: {activeSearch.keyword}</small></li>
+                )}
+              </ul>
+            </div>
+          )}
+        </CModalBody>
+        
+        <CModalFooter>
+          <CButton color="secondary" onClick={() => setExportModalVisible(false)}>
+            Cancel
+          </CButton>
+          <CButton color="primary" onClick={generateDetailExport} disabled={exportLoading}>
+            {exportLoading ? (
+              <>
+                <CSpinner size="sm" className="me-1" />
+                Exporting...
+              </>
+            ) : (
+              <>
+                <i className="fa fa-fw fa-file-excel me-1"></i>
+                Export
+              </>
+            )}
+          </CButton>
+        </CModalFooter>
+      </CModal>
       
       <CCard className='table-container mt-4'>
         <CCardHeader className='card-header d-flex justify-content-between align-items-center'>
@@ -507,11 +541,11 @@ const OnuTrackReport = () => {
             <CButton 
               size="sm" 
               className="action-btn me-1"
-              onClick={generateDetailExport}
-              disabled={loading}
+              onClick={openExportModal}
+              disabled={exportLoading || data.length === 0}
             >
               <i className="fa fa-fw fa-file-excel"></i>
-              {loading ? 'Exporting...' : 'Export'}
+              Export
             </CButton>
           </div>
           
@@ -527,10 +561,16 @@ const OnuTrackReport = () => {
         <CCardBody>
           <div className="d-flex justify-content-between mb-3">
             <div>
+              {(exportStartDate || exportEndDate) && (
+                <div className="text-muted small">
+                  {exportStartDate && `Export From: ${exportStartDate} `}
+                  {exportEndDate && `To: ${exportEndDate}`}
+                </div>
+              )}
               <strong>Total Records: {filteredData.length}</strong>
             </div>
             <div className='d-flex'>
-              <CFormLabel className='mt-1 m-1'>Search:</CFormLabel>
+              <CFormLabelPro className='mt-1 m-1'>Search:</CFormLabelPro>
               <CFormInput
                 type="text"
                 style={{maxWidth: '350px', height: '30px', borderRadius: '0'}}
