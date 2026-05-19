@@ -8448,7 +8448,7 @@ const SaleInvoices = () => {
                     borderBottom: 'none'
                   }}
                 >
-                  Stock Requests
+                  Challan Report
                 </CNavLink>
               </CNavItem>
               <CNavItem>

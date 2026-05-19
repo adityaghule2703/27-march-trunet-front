@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useRef, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useTranslation } from 'react-i18next'
@@ -50,10 +48,15 @@ const AppHeader = () => {
   const [searchDropdownOpen, setSearchDropdownOpen] = useState(false)
   const [loading, setLoading] = useState(false)
 
+  // Fix: Separate handler for mobile menu (toggles sidebar visibility)
+  const handleSidebarToggle = () => {
+    dispatch({ type: 'set', sidebarShow: !sidebarShow })
+  }
+
+  // Handler for desktop unfoldable menu
   const handleMenuClick = () => {
     dispatch({ type: 'set', sidebarUnfoldable: !unfoldable })
   }
-
 
   const handleUsernameClick = (customerId) => {
     navigate(`/customer-profile/${customerId}`)
@@ -222,7 +225,24 @@ const AppHeader = () => {
     <CHeader position="sticky" className="mb-4 p-0" ref={headerRef} style={{backgroundColor:'#2759a2'}}>
       <CContainer className="px-4" fluid>
         
-        <CHeaderToggler onClick={handleMenuClick} style={{marginLeft:'-40px'}}>
+        {/* Mobile menu button - toggles sidebar visibility */}
+        <CHeaderToggler 
+          onClick={handleSidebarToggle} 
+          style={{marginLeft:'-40px'}}
+          className="d-lg-none"  // Only show on mobile/tablet
+        >
+          <CIcon icon={cilMenu} size="lg" 
+          style={{color:'#fff', verticalAlign: 'middle',
+            position:'relative',filter:'brightness(150%)',
+          }}/>
+        </CHeaderToggler>
+
+        {/* Desktop unfoldable button - optional, you might want to hide on mobile */}
+        <CHeaderToggler 
+          onClick={handleMenuClick} 
+          style={{marginLeft:'-40px'}}
+          className="d-none d-lg-flex"  // Only show on desktop
+        >
           <CIcon icon={cilMenu} size="lg" 
           style={{color:'#fff', verticalAlign: 'middle',
             position:'relative',filter:'brightness(150%)',
